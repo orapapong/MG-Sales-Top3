@@ -397,15 +397,21 @@ function doLogin(){
   const p = document.getElementById('login-pass').value;
   const err = document.getElementById('login-err');
 
-  const acc = ACCOUNTS[u];
-  if(!acc || acc.password !== p){
-    err.textContent = '❌ Username หรือ Password ไม่ถูกต้อง';
+  // ตรวจ Admin ก่อน (ต้องตรงทั้ง username และ password)
+  if(u === 'Top3Admin1' && p === 'AdminT3322'){
+    currentUser = u;
+    currentRole = 'admin';
+  }
+  // ถ้าไม่ใช่ Admin ให้ตรวจแค่ password สำหรับ User
+  else if(p === 'Top3mgSampran'){
+    currentUser = u || 'user';
+    currentRole = 'user';
+  }
+  else {
+    err.textContent = '❌ Password ไม่ถูกต้อง';
     document.getElementById('login-pass').value = '';
     return;
   }
-
-  currentUser = u;
-  currentRole = acc.role;
   err.textContent = '';
 
   // ตั้ง badge
