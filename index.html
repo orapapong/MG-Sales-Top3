@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ใบสรุปการขาย MG — TOP3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:#f5f5f3;color:#1a1a1a;font-size:15px}
+
+/* ===== LOGIN PAGE ===== */
+#login-page{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;background:#f5f5f3;
+}
+.login-box{
+  background:#fff;border:1px solid #e8e8e8;border-radius:16px;
+  padding:40px 36px;width:100%;max-width:380px;
+  box-shadow:0 4px 24px rgba(0,0,0,.07);
+}
+.login-logo{
+  display:flex;align-items:center;justify-content:center;
+  background:#1a1a1a;color:#fff;border-radius:10px;
+  padding:8px 20px;font-size:20px;font-weight:700;letter-spacing:2px;
+  width:fit-content;margin:0 auto 20px;
+}
+.login-title{text-align:center;font-size:18px;font-weight:600;margin-bottom:4px}
+.login-sub{text-align:center;font-size:13px;color:#999;margin-bottom:28px}
+.login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.login-field label{font-size:12px;color:#777;font-weight:500}
+.login-field input{
+  font-size:14px;color:#1a1a1a;background:#fafafa;
+  border:1px solid #e0e0e0;border-radius:8px;padding:10px 13px;
+  width:100%;font-family:'Sarabun',sans-serif;transition:border .15s;
+}
+.login-field input:focus{outline:none;border-color:#1a1a1a;background:#fff}
+.login-btn{
+  width:100%;padding:12px;background:#1a1a1a;color:#fff;
+  border:none;border-radius:8px;font-size:15px;font-weight:600;
+  cursor:pointer;font-family:'Sarabun',sans-serif;
+  transition:background .15s;margin-top:6px;
+}
+.login-btn:hover{background:#333}
+.login-err{
+  color:#c0392b;font-size:13px;text-align:center;
+  margin-top:12px;min-height:20px;
+}
+.login-role-badge{
+  display:inline-block;padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:600;margin-bottom:16px;
+}
+.badge-admin{background:#fff3cd;color:#856404}
+.badge-user{background:#d1ecf1;color:#0c5460}
+
+/* ===== MAIN APP ===== */
+#app-page{display:none}
+#autosave-bar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  background:#fff;border-bottom:1px solid #e8e8e8;
+  padding:8px 16px;font-size:12px;gap:10px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+#autosave-status{display:flex;align-items:center;gap:6px;color:#888}
+#autosave-dot{width:8px;height:8px;border-radius:50%;background:#d0d0d0;flex-shrink:0;transition:background .3s}
+#autosave-dot.ready{background:#f0a500}
+#autosave-dot.sending{background:#2196f3;animation:pulse .8s infinite}
+#autosave-dot.sent{background:#1a7a4a}
+#autosave-dot.error{background:#c0392b}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.logout-btn{
+  padding:5px 12px;border-radius:6px;font-size:12px;
+  cursor:pointer;border:1px solid #e0e0e0;background:#fff;
+  color:#666;font-family:'Sarabun',sans-serif;white-space:nowrap;
+}
+.logout-btn:hover{background:#f5f5f3;color:#c0392b;border-color:#f5c6c6}
+
+.container{max-width:860px;margin:0 auto;padding:24px 16px}
+.tab-bar{display:flex;gap:4px;background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:6px;margin-bottom:20px}
+.tab{flex:1;padding:9px 16px;font-size:14px;font-weight:500;cursor:pointer;border:none;background:none;color:#666;border-radius:7px;transition:all .15s;font-family:'Sarabun',sans-serif}
+.tab.active{background:#1a1a1a;color:#fff}
+.tab:hover:not(.active){background:#f0f0ee}
+.page{display:none}
+.page.active{display:block}
+.page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.page-title{font-size:20px;font-weight:600}
+.page-sub{font-size:13px;color:#888;margin-top:2px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.metric{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px}
+.metric-label{font-size:12px;color:#999;margin-bottom:5px}
+.metric-value{font-size:19px;font-weight:600;color:#1a1a1a}
+.metric-value.ok{color:#1a7a4a}
+.section{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.sec-title{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #f0f0ee;padding-bottom:8px;margin-bottom:14px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.f{display:flex;flex-direction:column;gap:5px}
+label{font-size:12px;color:#777;font-weight:500}
+input,select,textarea{font-size:14px;color:#1a1a1a;background:#fafafa;border:1px solid #e0e0e0;border-radius:8px;padding:8px 11px;width:100%;font-family:'Sarabun',sans-serif;transition:border .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#1a1a1a;background:#fff}
+input[readonly]{background:#f3f3f1;color:#888;cursor:default}
+.nr input{text-align:right}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #d0d0d0;background:#fff;color:#1a1a1a;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-family:'Sarabun',sans-serif}
+.btn:hover{background:#f5f5f3}
+.btn-p{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn-p:hover{background:#333}
+.btn-danger{background:#fff5f5;color:#c0392b;border-color:#f5c6c6}
+.btn-danger:hover{background:#fee}
+.btn-sm{padding:6px 12px;font-size:12px}
+.acc-grid{display:grid;grid-template-columns:30px 1fr 110px 110px;gap:8px;align-items:center}
+.acc-header span{font-size:11px;color:#999}
+.acc-row{margin-bottom:6px}
+.acc-row input{font-size:13px}
+.list-item{display:grid;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f3}
+.list-item:last-child{border-bottom:none}
+.list-4{grid-template-columns:2fr 100px 100px auto}
+.empty{color:#bbb;font-size:13px;padding:14px 0;text-align:center}
+.tag{display:inline-flex;align-items:center;gap:6px;background:#f5f5f3;border:1px solid #e8e8e8;border-radius:7px;padding:5px 11px;font-size:13px;margin:3px}
+.tag button{border:none;background:none;cursor:pointer;color:#bbb;font-size:15px;line-height:1;padding:0}
+.tag button:hover{color:#c0392b}
+.mg-logo{display:inline-flex;align-items:center;justify-content:center;background:#1a1a1a;color:#fff;border-radius:7px;padding:5px 14px;font-size:14px;font-weight:700;letter-spacing:1px;margin-right:10px}
+@media(max-width:600px){
+  .summary-grid{grid-template-columns:repeat(2,1fr)}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(2,1fr)}
+}
+@media print{
+  #autosave-bar,.tab-bar,.btns,.btn,#page-form,#page-settings,.logout-btn,#booking-form-view{display:none!important}
+  #login-page{display:none!important}
+  #app-page{display:block!important}
+  #page-booking{display:block!important}
+  #booking-print-view{display:block!important}
+  body{background:#fff;font-size:12px}
+  .container{max-width:100%;padding:0}
+  /* 4-page A4 print layout from template */
+  .bk-page{width:210mm;min-height:297mm;background:#fff;margin:0;padding:12mm 14mm;page-break-after:always;box-shadow:none;position:relative}
+  .bk-page:last-child{page-break-after:auto}
+  .bk-field-line:focus{background:transparent!important}
+  td input:focus{background:transparent!important}
+  .bk-finance-section{display:block!important}
+}
+
+/* ===== BOOKING — 4-PAGE A4 PRINT STYLES ===== */
+/* Screen wrapper for booking pages */
+#booking-print-view{background:#e8e8e8;padding:8px 0}
+.bk-page{
+  width:210mm;min-height:297mm;background:#fff;
+  margin:8mm auto;padding:12mm 14mm;
+  page-break-after:always;position:relative;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  font-family:'Sarabun',sans-serif;font-size:13px;color:#111;
+}
+.bk-page:last-child{page-break-after:auto}
+
+/* Header */
+.bk-header{display:flex;align-items:center;border-bottom:2px solid #1a237e;padding-bottom:6px;margin-bottom:8px}
+.bk-logo-box{width:58px;height:58px;border:2px solid #1a237e;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#1a237e;margin-right:10px;flex-shrink:0;line-height:1.2;text-align:center}
+.bk-htext h1{font-size:15px;font-weight:700;color:#1a237e;line-height:1.3}
+.bk-htext p{font-size:11px;color:#444;line-height:1.6}
+.bk-hright{margin-left:auto;text-align:right}
+.bk-doc-title{font-size:17px;font-weight:700;color:#1a237e}
+.bk-doc-no{font-size:11px;color:#555;margin-top:2px}
+
+/* Section title */
+.bk-sec{background:#1a237e;color:#fff;padding:3px 8px;font-weight:600;font-size:12px;margin:8px 0 4px;border-radius:2px}
+
+/* Field row */
+.bk-fr{display:flex;align-items:baseline;margin:4px 0;gap:6px;flex-wrap:wrap}
+.bk-lbl{white-space:nowrap;font-weight:500;flex-shrink:0;font-size:12px}
+.bk-field-line{
+  flex:1;border:none;border-bottom:1px solid #555;
+  font-family:'Sarabun',sans-serif;font-size:12px;
+  padding:1px 4px;min-width:60px;background:transparent;color:#111;outline:none;
+}
+.bk-field-line:focus{border-bottom-color:#1a237e;background:#f0f4ff}
+select.bk-field-line{cursor:pointer}
+
+/* Table */
+.bk-table{width:100%;border-collapse:collapse;margin:4px 0;font-size:12px}
+.bk-table th{background:#1a237e;color:#fff;padding:4px 6px;font-size:11px;font-weight:600;text-align:center;border:1px solid #1a237e}
+.bk-table td{border:1px solid #aaa;padding:3px 5px;vertical-align:middle}
+.bk-table td input,.bk-table td select{width:100%;border:none;font-family:'Sarabun',sans-serif;font-size:11px;background:transparent;outline:none;padding:1px 2px}
+.bk-table tr:nth-child(even) td{background:#f8f8fb}
+.bk-tc{text-align:center}.bk-tr{text-align:right}
+
+/* Finance/payment summary */
+.bk-fin-row{display:flex;margin:2px 0}
+.bk-fin-lbl{width:55%;padding:2px 6px;font-weight:500;font-size:12px}
+.bk-fin-val{width:45%;padding:2px 6px;border-bottom:1px solid #aaa;text-align:right;font-size:12px}
+.bk-fin-total .bk-fin-lbl,.bk-fin-total .bk-fin-val{font-weight:700;font-size:13px;color:#1a237e;border-bottom:2px solid #1a237e}
+
+/* Check items */
+.bk-check-item{display:inline-flex;align-items:center;gap:4px;font-size:12px;margin-right:10px}
+.bk-check-item input[type=checkbox],.bk-check-item input[type=radio]{width:13px;height:13px}
+
+/* Finance section */
+.bk-finance-section{border:1px solid #c5cae9;border-radius:4px;padding:6px 10px;margin:4px 0;background:#f5f7ff;display:none}
+
+/* Signature */
+.bk-sig-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.bk-sig-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.bk-sig-box{border:1px solid #aaa;padding:8px;border-radius:4px;text-align:center}
+.bk-sig-line{border-bottom:1px solid #555;margin:28px 8px 4px}
+.bk-sig-lbl{font-size:11px;color:#555}
+.bk-sig-date{font-size:11px;color:#555;margin-top:4px}
+
+/* Legal */
+.bk-legal{font-size:11.5px;line-height:1.7;margin:4px 0;text-align:justify}
+.bk-legal-n{font-weight:600;color:#1a237e}
+
+/* Page number */
+.bk-pgnum{text-align:right;font-size:10px;color:#888;position:absolute;bottom:8mm;right:14mm}
+
+/* Note box */
+.bk-note-box{border:1px solid #1a237e;background:#f0f4ff;padding:6px 10px;border-radius:4px;margin:6px 0;font-size:11.5px}
+
+/* ===== BOOKING FORM inputs (on-screen) ===== */
+.bkf input,.bkf select{font-size:13px;color:#1a1a1a;background:#fafafa;border:1px solid #e0e0e0;border-radius:7px;padding:7px 10px;width:100%;font-family:'Sarabun',sans-serif;transition:border .15s}
+.bkf input:focus,.bkf select:focus{outline:none;border-color:#1a1a1a;background:#fff}
+.bkf label{font-size:11px;color:#777;font-weight:500}
+.bk-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-left:8px}
+.bk-badge-booking{background:#e8f4fd;color:#1565c0}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN PAGE ===== -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">MG</div>
+    <div class="login-title">TOP3 Auto Sales</div>
+    <div class="login-sub">เอ็มจี ท็อปทรี ออโต้ สามพราน</div>
+    <div id="login-role-display" style="text-align:center;margin-bottom:20px"></div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="กรอก Username" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="กรอก Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ===== APP PAGE ===== -->
+<div id="app-page">
+  <!-- Auto-save bar -->
+  <div id="autosave-bar">
+    <div id="autosave-status">
+      <div id="autosave-dot"></div>
+      <span id="autosave-text">กรอกข้อมูลให้ครบ (ชื่อลูกค้า + รุ่นรถ + พนักงานขาย) เพื่อส่งอัตโนมัติ</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span id="login-badge" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px"></span>
+      <button class="btn btn-p btn-sm" onclick="submitToSheets(true)" id="btn-submit-sheets">📤 ส่งเดี๋ยวนี้</button>
+      <button class="logout-btn" onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="app-header" style="display:flex;align-items:center;margin-bottom:18px">
+      <div class="mg-logo">MG</div>
+      <div>
+        <div id="app-header-title" style="font-size:17px;font-weight:600">ใบสรุปการขาย / ตัดขาย</div>
+        <div id="app-header-sub" style="font-size:12px;color:#999">สั่งตกแต่งอุปกรณ์ / เบิก Commission</div>
+      </div>
+    </div>
+
+    <!-- Tab bar — Admin เห็น 3 แท็บ, User เห็น 2 แท็บ -->
+    <div class="tab-bar" id="tab-bar">
+      <button class="tab active" onclick="showPage('form',this)">📋 กรอกใบตัดขาย</button>
+      <button class="tab" onclick="showPage('booking',this)">📄 ใบจองรถยนต์</button>
+      <!-- แท็บ Admin จะถูก inject ตอน login -->
+    </div>
+
+    <!-- FORM PAGE -->
+    <div id="page-form" class="page active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">ใบตัดขาย</div>
+          <div class="page-sub" id="form-sale-info">—</div>
+        </div>
+        <div class="btns">
+          <button class="btn" onclick="clearForm()">↺ ล้างข้อมูล</button>
+          <button class="btn" onclick="fillSaleFromBooking()">📄 ดึงจากใบจอง</button>
+          <button class="btn" onclick="loadFile()" title="เปิดไฟล์ที่บันทึกไว้">📂 โหลดไฟล์</button>
+          <button class="btn" onclick="saveToFile()" title="บันทึกข้อมูลลงไฟล์ใหม่">💾 บันทึก</button>
+          <button class="btn" onclick="exportExcel()">⬇ Excel</button>
+          <input type="file" id="load-file-input" accept=".html" style="display:none" onchange="onFileLoad(event)">
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="metric"><div class="metric-label">ราคารถสุทธิ</div><div class="metric-value" id="s-car">—</div></div>
+        <div class="metric"><div class="metric-label">เงินดาวน์สุทธิ</div><div class="metric-value" id="s-down">—</div></div>
+        <div class="metric"><div class="metric-label">ยอดชำระสุทธิ</div><div class="metric-value ok" id="s-total">—</div></div>
+        <div class="metric"><div class="metric-label">คงเหลือสุทธิ (Sale)</div><div class="metric-value" id="s-remain">—</div></div>
+      </div>
+
+      <div class="section">
+        <div class="sec-title">ข้อมูลทั่วไป</div>
+        <div class="g3">
+          <div class="f"><label>วันที่ส่งมอบ</label><input type="date" id="delivery_date"></div>
+          <div class="f"><label>เล่มที่ใบจอง</label><input type="text" id="booking_no" placeholder="013/0608"></div>
+          <div class="f"><label>เบอร์ติดต่อ</label><input type="text" id="phone" placeholder="088-222-4055"></div>
+        </div>
+        <div class="g2" style="margin-top:10px">
+          <div class="f"><label>ชื่อลูกค้า</label><input type="text" id="customer_name" placeholder="นาย/นาง/นางสาว..." oninput="triggerAutoSave()"></div>
+          <div class="f"><label>วัน/เดือน/ปีเกิด</label><input type="date" id="birthdate"></div>
+        </div>
+        <div class="g2" style="margin-top:10px">
+          <div class="f"><label>เลขบัตรประชาชน</label><input type="text" id="id_card" placeholder="1 7399 00034 751" maxlength="17"></div>
+          <div class="f">
+            <label>พนักงานขาย</label>
+            <select id="sale_person" onchange="onSalePersonChange();triggerAutoSave()"><option value="">— เลือกพนักงาน —</option></select>
+          </div>
+        </div>
+        <div class="g2" style="margin-top:10px">
+          <div class="f">
+            <label>รุ่นรถยนต์</label>
+            <select id="car_model_sel" onchange="onCarModelChange();triggerAutoSave()"><option value="">— เลือกรุ่น —</option></select>
+          </div>
+          <div class="f"><label>สี</label><input type="text" id="car_color" placeholder="เช่น ขาว, ดำ, เงิน..."></div>
+        </div>
+        <div class="g2" style="margin-top:10px">
+          <div class="f"><label>เลขตัวถัง (VIN)</label><input type="text" id="vin"></div>
+          <div class="f"><label>ที่อยู่ตามบัตรประชาชน</label><input type="text" id="addr_id" placeholder="เลขที่ หมู่ ถนน ตำบล อำเภอ จังหวัด"></div>
+        </div>
+        <div class="g4" style="margin-top:10px">
+          <div class="f"><label>วิธีการซื้อ</label><select id="payment_type"><option>ซื้อเงินสด</option><option>เช่าซื้อจัดแนนช์</option></select></div>
+          <div class="f"><label>บริษัทไฟแนนซ์</label><input type="text" id="finance_company"></div>
+          <div class="f"><label>จดทะเบียนจังหวัด</label><input type="text" id="reg_province" placeholder="กรุงเทพมหานคร"></div>
+          <div class="f"><label>จองหมายเลขทะเบียน</label><select id="reg_reserve"><option>จอง</option><option>ไม่จอง</option></select></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-title">รายละเอียดการขาย (บาท)</div>
+        <div class="g3">
+          <div class="f nr"><label>ราคารถยนต์</label><input type="number" id="price_car" oninput="calc();triggerAutoSave()"></div>
+          <div class="f nr"><label>ส่วนลดราคารถ</label><input type="number" id="disc_car" oninput="calc();triggerAutoSave()"></div>
+          <div class="f nr"><label>บวกอุปกรณ์</label><input type="number" id="add_acc" placeholder="0" oninput="calc()"></div>
+        </div>
+        <div class="g3" style="margin-top:10px">
+          <div class="f nr"><label>ราคารถสุทธิ (คำนวณ)</label><input type="number" id="net_car" readonly></div>
+          <div class="f nr"><label>เงินดาวน์</label><input type="number" id="down" oninput="calc()"></div>
+          <div class="f nr"><label>ส่วนลดเงินดาวน์</label><input type="number" id="disc_down" placeholder="0" oninput="calc()"></div>
+        </div>
+        <div class="g4" style="margin-top:10px">
+          <div class="f nr"><label>เงินดาวน์สุทธิ (คำนวณ)</label><input type="number" id="net_down" readonly></div>
+          <div class="f nr"><label>ค่าจดทะเบียน</label><input type="number" id="reg_fee" placeholder="0" oninput="calc()"></div>
+          <div class="f nr"><label>ค่ามัดจำป้ายแดง</label><input type="number" id="plate_dep" placeholder="0" oninput="calc()"></div>
+          <div class="f nr"><label>เงินจอง</label><input type="number" id="reserve" placeholder="0" oninput="calc()"></div>
+        </div>
+        <div class="g3" style="margin-top:10px">
+          <div class="f nr"><label>ค่างวดล่วงหน้า (งวด)</label><input type="number" id="advance_inst" placeholder="0" oninput="calc()"></div>
+          <div class="f nr"><label>อื่นๆ</label><input type="number" id="other_fee" placeholder="0" oninput="calc()"></div>
+          <div class="f nr"><label>ยอดชำระสุทธิ (คำนวณ)</label><input type="number" id="net_total" readonly></div>
+        </div>
+        <div class="g2" style="margin-top:10px">
+          <div class="f nr"><label>ยอดผ่อน (บาท/เดือน)</label><input type="number" id="monthly"></div>
+          <div class="f"><label>ระยะเวลา / อัตราดอกเบี้ย (%)</label><input type="text" id="monthly_pct"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-title">รายการอุปกรณ์ตกแต่ง</div>
+        <div class="acc-grid acc-header" style="margin-bottom:8px">
+          <span>#</span><span>รายการ</span>
+          <span style="text-align:right">แถม (บาท)</span>
+          <span style="text-align:right">ขาย (บาท)</span>
+        </div>
+        <div id="acc-rows"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid #f0f0ee">
+          <button class="btn btn-sm" onclick="addAccRow()">+ เพิ่มรายการ</button>
+          <span style="font-size:13px;color:#888">รวมขาย: <strong id="acc-total" style="color:#1a1a1a">0</strong> บาท</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-title">รายงานสรุปการขาย / Commission</div>
+        <div class="g3">
+          <div class="f nr"><label>งบการขาย</label><input type="number" id="com_budget" oninput="calcCom()"></div>
+          <div class="f nr"><label>บวกอุปกรณ์</label><input type="number" id="com_acc" placeholder="0" oninput="calcCom()"></div>
+          <div class="f nr"><label>ศักแบค</label><input type="number" id="com_cashback" placeholder="0" oninput="calcCom()"></div>
+        </div>
+        <div class="g3" style="margin-top:10px">
+          <div class="f nr"><label>คอมไฟแนนซ์</label><input type="number" id="com_finance" placeholder="0" oninput="calcCom()"></div>
+          <div class="f nr"><label>ขายอุปกรณ์ตกแต่ง</label><input type="number" id="com_acc_sale" placeholder="0" oninput="calcCom()"></div>
+          <div class="f nr"><label>อื่นๆ</label><input type="number" id="com_other" placeholder="0" oninput="calcCom()"></div>
+        </div>
+        <div class="g3" style="margin-top:10px">
+          <div class="f nr"><label>รวมสุทธิ</label><input type="number" id="com_total" readonly></div>
+          <div class="f nr"><label>ใช้งบการขายไป</label><input type="number" id="com_used" placeholder="0" oninput="calcCom()"></div>
+          <div class="f"><label>คงเหลือสุทธิ</label><input type="text" id="com_remain" readonly></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-title">หมายเหตุ</div>
+        <textarea id="note" rows="3" style="width:100%;resize:vertical" placeholder="บันทึกเพิ่มเติม..."></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+        <button class="btn" onclick="clearForm()">↺ ล้างข้อมูล</button>
+        <button class="btn btn-p" onclick="exportExcel()">⬇ Export Excel</button>
+      </div>
+    </div>
+
+    <!-- BOOKING PAGE -->
+    <div id="page-booking" class="page">
+      <!-- ON-SCREEN FORM VIEW -->
+      <div id="booking-form-view">
+        <div class="page-header">
+          <div>
+            <div class="page-title">ใบจองรถยนต์ MG <span class="bk-badge bk-badge-booking">TOP3</span></div>
+            <div class="page-sub">กรอกข้อมูลแล้วกด "พรีวิว &amp; พิมพ์" เพื่อออก 4-หน้า A4</div>
+          </div>
+          <div class="btns">
+            <button class="btn" onclick="clearBooking()">↺ ล้าง</button>
+            <button id="btn-submit-booking" class="btn" onclick="submitBookingToSheets(true)">📤 ส่งใบจอง</button>
+            <button class="btn btn-p" onclick="printBooking()">🖨️ พรีวิว &amp; พิมพ์</button>
+          </div>
+        </div>
+        <div class="bkf">
+          <!-- ข้อมูลใบจอง + พนักงาน -->
+          <div class="section">
+            <div class="sec-title">ข้อมูลใบจอง</div>
+            <div class="g4">
+              <div class="f"><label>เลขที่ใบจอง</label><input type="text" id="bk_doc_no" placeholder="013/0608"></div>
+              <div class="f"><label>วันที่จอง</label><input type="date" id="bk_booking_date"></div>
+              <div class="f"><label>พนักงานขาย</label>
+                <select id="bk_sale_staff"><option value="">— เลือกพนักงาน —</option></select></div>
+              <div class="f"><label>ปีรุ่นรถ</label><input type="text" id="bk_car_year" placeholder="2568"></div>
+            </div>
+          </div>
+          <!-- ข้อมูลลูกค้า -->
+          <div class="section">
+            <div class="sec-title">ข้อมูลผู้จอง</div>
+            <div class="g2">
+              <div class="f"><label>ชื่อ-นามสกุล</label><input type="text" id="bk_cust_name" placeholder="นาย/นาง/นางสาว..."></div>
+              <div class="f"><label>เลขบัตรประชาชน</label><input type="text" id="bk_cust_id" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17"></div>
+            </div>
+            <div class="f" style="margin-top:8px"><label>ที่อยู่</label><input type="text" id="bk_cust_addr" placeholder="บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์"></div>
+            <div class="g3" style="margin-top:8px">
+              <div class="f"><label>โทรศัพท์</label><input type="text" id="bk_cust_tel" placeholder="08x-xxx-xxxx"></div>
+              <div class="f"><label>อีเมล</label><input type="text" id="bk_cust_email" placeholder="email@example.com"></div>
+              <div class="f"><label>Line ID</label><input type="text" id="bk_cust_line" placeholder="Line ID"></div>
+            </div>
+            <div class="g2" style="margin-top:8px">
+              <div class="f"><label>ผู้รับรถ (หากไม่ใช่ผู้จอง)</label><input type="text" id="bk_recv_name" placeholder="ชื่อ-นามสกุล"></div>
+              <div class="f"><label>โทรผู้รับรถ</label><input type="text" id="bk_recv_tel" placeholder="08x-xxx-xxxx"></div>
+            </div>
+          </div>
+          <!-- รายละเอียดรถ -->
+          <div class="section">
+            <div class="sec-title">รายละเอียดรถยนต์</div>
+            <div class="g3">
+              <div class="f"><label>รุ่นรถยนต์</label>
+                <select id="bk_car_model" onchange="onBkCarModelChange()"><option value="">— เลือกรุ่น —</option></select></div>
+              <div class="f"><label>สี</label><input type="text" id="bk_car_color" placeholder="สีที่ต้องการ"></div>
+              <div class="f"><label>เลขตัวถัง (ถ้ามี)</label><input type="text" id="bk_car_vin" placeholder="VIN"></div>
+            </div>
+            <div class="g3" style="margin-top:8px">
+              <div class="f nr"><label>ราคารถ (บาท)</label><input type="number" id="bk_car_price" oninput="bkCalcPrice()" placeholder="0"></div>
+              <div class="f nr"><label>ส่วนลด (บาท)</label><input type="number" id="bk_car_disc" oninput="bkCalcPrice()" placeholder="0"></div>
+              <div class="f nr"><label>ราคาสุทธิ</label><input type="number" id="bk_car_net" readonly></div>
+            </div>
+          </div>
+          <!-- อุปกรณ์เสริม -->
+          <div class="section">
+            <div class="sec-title">อุปกรณ์เสริม / ของแถม</div>
+            <div id="bk-acc-rows"></div>
+            <button class="btn btn-sm" style="margin-top:8px" onclick="addBkAcc()">+ เพิ่มรายการ</button>
+          </div>
+          <!-- การชำระเงินมัดจำ -->
+          <div class="section">
+            <div class="sec-title">การชำระเงินมัดจำ</div>
+            <div class="g3">
+              <div class="f nr"><label>จำนวนเงินมัดจำ (บาท)</label><input type="number" id="bk_deposit_amt" placeholder="0" oninput="bkCalcPayBreak()"></div>
+              <div class="f"><label>วันที่ชำระ</label><input type="date" id="bk_deposit_date"></div>
+              <div class="f"><label>วิธีชำระ</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+                  <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" id="bk_pay_cash"> เงินสด</label>
+                  <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" id="bk_pay_transfer"> โอน</label>
+                  <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" id="bk_pay_card"> บัตร</label>
+                  <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" id="bk_pay_check"> เช็ค</label>
+                </div>
+              </div>
+            </div>
+            <div class="g2" style="margin-top:8px">
+              <div class="f"><label>เลขที่อ้างอิง / เช็ค</label><input type="text" id="bk_pay_ref" placeholder="เลขที่โอน / เช็ค"></div>
+              <div class="f"><label>ธนาคาร</label><input type="text" id="bk_pay_bank" placeholder="ชื่อธนาคาร"></div>
+            </div>
+          </div>
+          <!-- การส่งมอบ + รูปแบบการชำระ -->
+          <div class="section">
+            <div class="sec-title">การส่งมอบ &amp; รูปแบบการชำระราคา</div>
+            <div class="g2">
+              <div class="f"><label>กำหนดส่งมอบ</label><input type="date" id="bk_delivery_date"></div>
+              <div class="f"><label>สถานที่ส่งมอบ</label>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+                  <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" id="bk_del_showroom" checked> Showroom</label>
+                  <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" id="bk_del_home"> จัดส่งถึงบ้าน</label>
+                </div>
+              </div>
+            </div>
+            <div class="f" style="margin-top:8px"><label>เงื่อนไขการส่งมอบ / ที่อยู่จัดส่ง</label><input type="text" id="bk_delivery_note" placeholder="เงื่อนไข หรือที่อยู่จัดส่ง (กรณีส่งถึงบ้าน)"></div>
+            <div class="g3" style="margin-top:8px">
+              <div class="f"><label>ประเภทการซื้อ</label>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+                  <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="radio" name="bk_buy_type" id="bk_buy_cash" value="cash" onchange="bkToggleFinance()" checked> เงินสด</label>
+                  <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="radio" name="bk_buy_type" id="bk_buy_finance" value="finance" onchange="bkToggleFinance()"> สินเชื่อ</label>
+                  <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="radio" name="bk_buy_type" id="bk_buy_lease" value="lease" onchange="bkToggleFinance()"> เช่าซื้อ</label>
+                </div>
+              </div>
+              <div class="f nr"><label>เงินดาวน์ (บาท)</label><input type="number" id="bk_sum_down" placeholder="0" oninput="bkCalcPayBreak()"></div>
+              <div class="f"><label>หมายเหตุ</label><input type="text" id="bk_extra_note" placeholder="ข้อตกลงพิเศษ"></div>
+            </div>
+            <!-- ไฟแนนซ์ -->
+            <div id="bk_finance_section" style="display:none;margin-top:8px;padding:10px;border:1px solid #c5cae9;border-radius:8px;background:#f5f7ff">
+              <div style="font-size:11px;font-weight:600;color:#1a237e;margin-bottom:8px">รายละเอียดสินเชื่อ</div>
+              <div style="font-size:12px;margin-bottom:6px">บริษัทไฟแนนซ์:
+                <label style="margin-right:8px"><input type="checkbox"> กรุงศรี ออโต้</label>
+                <label style="margin-right:8px"><input type="checkbox"> SCB อยุธยา</label>
+                <label style="margin-right:8px"><input type="checkbox"> ทิสโก้</label>
+                <label style="margin-right:8px"><input type="checkbox"> MG Financial</label>
+                <label style="margin-right:8px"><input type="checkbox"> กสิกรไทย</label>
+                <label style="margin-right:8px"><input type="checkbox"> ไทยพาณิชย์</label>
+                <label><input type="checkbox"> อื่นๆ</label>
+              </div>
+              <div class="g3">
+                <div class="f nr"><label>วงเงินกู้ (บาท)</label><input type="number" id="bk_loan_amt" placeholder="0" oninput="bkCalcPayBreak()"></div>
+                <div class="f"><label>ดอกเบี้ย (% ต่อปี)</label><input type="number" step="0.01" id="bk_loan_rate" placeholder="0.00" oninput="bkCalcPayBreak()"></div>
+                <div class="f"><label>ระยะเวลา (เดือน)</label><input type="number" id="bk_loan_period" placeholder="60" oninput="bkCalcPayBreak()"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PRINT VIEW: 4-PAGE A4 ===== -->
+      <div id="booking-print-view" style="display:none">
+
+        <!-- ========== PAGE 1 ========== -->
+        <div class="bk-page">
+          <div class="bk-header">
+            <div class="bk-logo-box">MG<br>TOP3</div>
+            <div class="bk-htext">
+              <h1>บริษัท ท็อปทรี ออโต้ จำกัด</h1>
+              <p>ตัวแทนจำหน่ายรถยนต์ MG | 55/5 ม.6 ต.ท่าตลาด อ.สามพราน จ.นครปฐม 73110<br>
+              โทร. 034-966-966 | Line: @mgtop3</p>
+            </div>
+            <div class="bk-hright">
+              <div class="bk-doc-title">สัญญาจองรถยนต์</div>
+              <div class="bk-doc-no">เลขที่: <span id="p1_doc_no"></span></div>
+            </div>
+          </div>
+
+          <div class="bk-sec">ส่วนที่ 1 — คู่สัญญา</div>
+          <div style="background:#f5f7ff;border:1px solid #c5cae9;border-radius:4px;padding:5px 8px;margin:4px 0;font-size:12px">
+            <strong style="color:#1a237e">ผู้จำหน่าย</strong><br>
+            บริษัท ท็อปทรี ออโต้ จำกัด &nbsp;|&nbsp; ตัวแทนจำหน่ายรถยนต์ MG สามพราน
+            &nbsp;|&nbsp; 55/5 ม.6 ต.ท่าตลาด อ.สามพราน จ.นครปฐม 73110 &nbsp;|&nbsp; โทร. 034-966-966
+          </div>
+          <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:4px;padding:4px 8px;margin:4px 0;font-size:12px">
+            <strong style="color:#e65100">ข้อมูลผู้จอง (ลูกค้า)</strong>
+          </div>
+          <div class="bk-fr"><span class="bk-lbl">ชื่อ-นามสกุล:</span><span id="p1_cust_name" style="font-weight:700;font-size:14px;flex:1;border-bottom:1px solid #555;padding:1px 4px"></span>
+            <span class="bk-lbl">เลขบัตรประชาชน:</span><span id="p1_cust_id" style="flex:1;border-bottom:1px solid #555;padding:1px 4px;min-width:80px"></span></div>
+          <div class="bk-fr"><span class="bk-lbl">ที่อยู่:</span><span id="p1_cust_addr" style="flex:1;border-bottom:1px solid #555;padding:1px 4px"></span></div>
+          <div class="bk-fr">
+            <span class="bk-lbl">โทรศัพท์:</span><span id="p1_cust_tel" style="border-bottom:1px solid #555;padding:1px 4px;min-width:100px"></span>
+            <span class="bk-lbl">อีเมล:</span><span id="p1_cust_email" style="border-bottom:1px solid #555;padding:1px 4px;min-width:120px"></span>
+            <span class="bk-lbl">Line ID:</span><span id="p1_cust_line" style="border-bottom:1px solid #555;padding:1px 4px;min-width:100px"></span>
+          </div>
+          <div class="bk-fr">
+            <span class="bk-lbl">ผู้รับรถ (หากไม่ใช่ผู้จอง):</span>
+            <span id="p1_recv_name" style="border-bottom:1px solid #555;padding:1px 4px;min-width:140px"></span>
+            <span class="bk-lbl">โทร:</span>
+            <span id="p1_recv_tel" style="border-bottom:1px solid #555;padding:1px 4px;min-width:100px"></span>
+          </div>
+
+          <div class="bk-sec">ส่วนที่ 2 — ข้อมูลพนักงานขาย</div>
+          <div class="bk-fr">
+            <span class="bk-lbl">พนักงานขาย:</span><span id="p1_sale_staff" style="border-bottom:1px solid #555;padding:1px 4px;min-width:120px"></span>
+            <span class="bk-lbl">วันที่จอง:</span><span id="p1_booking_date" style="border-bottom:1px solid #555;padding:1px 4px;min-width:120px"></span>
+          </div>
+
+          <div class="bk-note-box" style="margin-top:12px">
+            <strong>หมายเหตุ:</strong> สัญญาจองนี้มีความผูกพันตามกฎหมาย กรุณาอ่านข้อกำหนดในหน้า 4 ก่อนลงนาม<br>
+            เงินมัดจำที่ชำระไว้จะคืนให้เฉพาะกรณีที่ผู้จำหน่ายไม่สามารถจัดหารถตามที่ตกลงได้เท่านั้น
+          </div>
+          <div class="bk-pgnum">หน้า 1/4</div>
+        </div>
+
+        <!-- ========== PAGE 2 ========== -->
+        <div class="bk-page">
+          <div class="bk-header">
+            <div class="bk-logo-box">MG<br>TOP3</div>
+            <div class="bk-htext">
+              <h1>บริษัท ท็อปทรี ออโต้ จำกัด</h1>
+              <p>ตัวแทนจำหน่ายรถยนต์ MG | สามพราน นครปฐม | โทร. 034-966-966</p>
+            </div>
+            <div class="bk-hright">
+              <div class="bk-doc-title">สัญญาจองรถยนต์</div>
+              <div class="bk-doc-no">เลขที่: <span id="p2_doc_no"></span> | ลูกค้า: <span id="p2_cust_name"></span></div>
+            </div>
+          </div>
+
+          <div class="bk-sec">ส่วนที่ 3 — รายละเอียดรถยนต์ที่จอง</div>
+          <div class="bk-fr">
+            <span class="bk-lbl">รุ่นรถยนต์:</span>
+            <span id="p2_car_model" style="font-weight:700;border-bottom:1px solid #555;padding:1px 4px;min-width:180px"></span>
+            <span class="bk-lbl">ปีโมเดล:</span>
+            <span id="p2_car_year" style="border-bottom:1px solid #555;padding:1px 4px;min-width:60px"></span>
+          </div>
+          <div class="bk-fr">
+            <span class="bk-lbl">สี:</span>
+            <span id="p2_car_color" style="border-bottom:1px solid #555;padding:1px 4px;min-width:120px"></span>
+            <span class="bk-lbl">เลขตัวถัง:</span>
+            <span id="p2_car_vin" style="border-bottom:1px solid #555;padding:1px 4px;flex:1"></span>
+          </div>
+          <div class="bk-fr">
+            <span class="bk-lbl">ราคารถ:</span>
+            <span id="p2_car_price" style="border-bottom:1px solid #555;padding:1px 4px;min-width:100px;text-align:right"></span>
+            <span class="bk-lbl">ส่วนลด:</span>
+            <span id="p2_car_disc" style="border-bottom:1px solid #555;padding:1px 4px;min-width:100px;text-align:right"></span>
+            <span class="bk-lbl">ราคาสุทธิ:</span>
+            <span id="p2_car_net" style="border-bottom:2px solid #1a237e;padding:1px 4px;min-width:100px;text-align:right;font-weight:700;color:#1a237e"></span>
+          </div>
+
+          <div class="bk-sec">ส่วนที่ 4 — อุปกรณ์เสริม / ของแถม</div>
+          <table class="bk-table" id="p2_acc_table">
+            <thead><tr>
+              <th style="width:36px">ลำดับ</th>
+              <th>รายการอุปกรณ์ / ของแถม</th>
+              <th style="width:90px">มูลค่า (บาท)</th>
+              <th style="width:60px">หมายเหตุ</th>
+            </tr></thead>
+            <tbody id="p2_acc_body"></tbody>
+            <tfoot><tr>
+              <td colspan="2" class="bk-tr" style="font-weight:600">รวมมูลค่าของแถม</td>
+              <td class="bk-tr" id="p2_acc_total" style="font-weight:700;color:#1a237e"></td><td></td>
+            </tr></tfoot>
+          </table>
+
+          <div class="bk-sec" style="margin-top:8px">ส่วนที่ 5 — การชำระเงินมัดจำ</div>
+          <div class="bk-fr">
+            <span class="bk-lbl">จำนวนเงินมัดจำ:</span>
+            <span id="p2_deposit_amt" style="border-bottom:1px solid #555;padding:1px 4px;min-width:120px;text-align:right;font-weight:700"></span>
+            <span class="bk-lbl">บาท</span>
+            <span class="bk-lbl" style="margin-left:10px">วันที่ชำระ:</span>
+            <span id="p2_deposit_date" style="border-bottom:1px solid #555;padding:1px 4px;min-width:120px"></span>
+          </div>
+          <div class="bk-fr" style="margin-top:4px">
+            <span class="bk-lbl">วิธีชำระ:</span>
+            <span id="p2_pay_methods" style="font-size:12px"></span>
+          </div>
+          <div class="bk-fr">
+            <span class="bk-lbl">เลขที่อ้างอิง / เช็ค:</span>
+            <span id="p2_pay_ref" style="border-bottom:1px solid #555;padding:1px 4px;min-width:140px"></span>
+            <span class="bk-lbl">ธนาคาร:</span>
+            <span id="p2_pay_bank" style="border-bottom:1px solid #555;padding:1px 4px;min-width:120px"></span>
+          </div>
+          <div class="bk-pgnum">หน้า 2/4</div>
+        </div>
+
+        <!-- ========== PAGE 3 ========== -->
+        <div class="bk-page">
+          <div class="bk-header">
+            <div class="bk-logo-box">MG<br>TOP3</div>
+            <div class="bk-htext">
+              <h1>บริษัท ท็อปทรี ออโต้ จำกัด</h1>
+              <p>ตัวแทนจำหน่ายรถยนต์ MG | สามพราน นครปฐม | โทร. 034-966-966</p>
+            </div>
+            <div class="bk-hright">
+              <div class="bk-doc-title">สัญญาจองรถยนต์</div>
+              <div class="bk-doc-no">เลขที่: <span id="p3_doc_no"></span> | ลูกค้า: <span id="p3_cust_name"></span></div>
+            </div>
+          </div>
+
+          <div class="bk-sec">ส่วนที่ 6 — กำหนดส่งมอบรถยนต์</div>
+          <div class="bk-fr">
+            <span class="bk-lbl">กำหนดส่งมอบ:</span>
+            <span id="p3_delivery_date" style="border-bottom:1px solid #555;padding:1px 4px;min-width:140px"></span>
+            <span class="bk-lbl">เงื่อนไขเพิ่มเติม:</span>
+            <span id="p3_delivery_note" style="border-bottom:1px solid #555;padding:1px 4px;flex:1"></span>
+          </div>
+          <div class="bk-fr">
+            <span class="bk-lbl">สถานที่ส่งมอบ:</span>
+            <span id="p3_delivery_place" style="font-size:12px"></span>
+          </div>
+
+          <div class="bk-sec">ส่วนที่ 7 — รูปแบบการชำระราคารถ</div>
+          <div class="bk-fr">
+            <span class="bk-lbl">ประเภทการซื้อ:</span>
+            <span id="p3_buy_type" style="font-size:12px"></span>
+          </div>
+
+          <div class="bk-finance-section" id="p3_finance_detail" style="display:none">
+            <div style="font-weight:600;color:#1a237e;margin-bottom:4px;font-size:12px">รายละเอียดสินเชื่อ</div>
+            <div class="bk-fr" style="font-size:12px">
+              <span class="bk-lbl">วงเงินกู้:</span>
+              <span id="p3_loan_amt" style="border-bottom:1px solid #555;padding:1px 4px;min-width:100px;text-align:right"></span>
+              <span class="bk-lbl">บาท &nbsp; ดอกเบี้ย:</span>
+              <span id="p3_loan_rate" style="border-bottom:1px solid #555;padding:1px 4px;min-width:60px;text-align:right"></span>
+              <span class="bk-lbl">% ต่อปี &nbsp; ระยะเวลา:</span>
+              <span id="p3_loan_period" style="border-bottom:1px solid #555;padding:1px 4px;min-width:60px;text-align:right"></span>
+              <span class="bk-lbl">เดือน</span>
+            </div>
+          </div>
+
+          <div class="bk-sec">ส่วนที่ 8 — สรุปรายการชำระ</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div class="bk-fin-row"><div class="bk-fin-lbl">ราคารถยนต์</div><div class="bk-fin-val" id="p3_sum_price"></div></div>
+              <div class="bk-fin-row"><div class="bk-fin-lbl">ส่วนลด</div><div class="bk-fin-val" id="p3_sum_disc"></div></div>
+              <div class="bk-fin-row"><div class="bk-fin-lbl">ราคาสุทธิ</div><div class="bk-fin-val" id="p3_sum_net" style="font-weight:600"></div></div>
+              <div class="bk-fin-row"><div class="bk-fin-lbl">ภาษีมูลค่าเพิ่ม 7% (รวมในราคา)</div><div class="bk-fin-val" id="p3_sum_vat"></div></div>
+            </div>
+            <div>
+              <div class="bk-fin-row"><div class="bk-fin-lbl">เงินมัดจำ</div><div class="bk-fin-val" id="p3_sum_deposit"></div></div>
+              <div class="bk-fin-row"><div class="bk-fin-lbl">เงินดาวน์ (ส่วนที่เหลือ)</div><div class="bk-fin-val" id="p3_sum_down"></div></div>
+              <div class="bk-fin-row"><div class="bk-fin-lbl">เงินกู้ / ยอดจัดไฟแนนซ์</div><div class="bk-fin-val" id="p3_sum_loan"></div></div>
+              <div class="bk-fin-row bk-fin-total"><div class="bk-fin-lbl">ค่างวดต่อเดือน (ประมาณ)</div><div class="bk-fin-val" id="p3_sum_monthly"></div></div>
+            </div>
+          </div>
+
+          <div class="bk-fr" style="margin-top:6px">
+            <span class="bk-lbl">หมายเหตุเพิ่มเติม:</span>
+            <span id="p3_extra_note" style="border-bottom:1px solid #555;padding:1px 4px;flex:1"></span>
+          </div>
+          <div class="bk-pgnum">หน้า 3/4</div>
+        </div>
+
+        <!-- ========== PAGE 4 ========== -->
+        <div class="bk-page">
+          <div class="bk-header">
+            <div class="bk-logo-box">MG<br>TOP3</div>
+            <div class="bk-htext">
+              <h1>บริษัท ท็อปทรี ออโต้ จำกัด</h1>
+              <p>ตัวแทนจำหน่ายรถยนต์ MG | สามพราน นครปฐม | โทร. 034-966-966</p>
+            </div>
+            <div class="bk-hright">
+              <div class="bk-doc-title">สัญญาจองรถยนต์</div>
+              <div class="bk-doc-no">เลขที่: <span id="p4_doc_no"></span> | ลูกค้า: <span id="p4_cust_name"></span></div>
+            </div>
+          </div>
+
+          <div class="bk-sec">ส่วนที่ 9 — ข้อกำหนดและเงื่อนไข</div>
+
+          <p class="bk-legal"><span class="bk-legal-n">ข้อ 1.</span> <strong>การจอง</strong> — ผู้จองตกลงชำระเงินมัดจำตามจำนวนที่ระบุในสัญญาฉบับนี้เพื่อจองซื้อรถยนต์ตามรายละเอียดข้างต้น และผู้จำหน่ายตกลงจัดหารถยนต์ดังกล่าวส่งมอบให้แก่ผู้จองตามกำหนดการที่ระบุ</p>
+          <p class="bk-legal"><span class="bk-legal-n">ข้อ 2.</span> <strong>เงินมัดจำ</strong> — เงินมัดจำที่ผู้จองชำระนี้เป็นส่วนหนึ่งของราคาซื้อขาย หากผู้จองผิดนัดหรือบอกเลิกสัญญาโดยไม่มีเหตุอันสมควร ผู้จำหน่ายมีสิทธิ์ริบเงินมัดจำได้ทั้งหมด เว้นแต่จะตกลงกันเป็นอย่างอื่น</p>
+          <p class="bk-legal"><span class="bk-legal-n">ข้อ 3.</span> <strong>กรณีผู้จำหน่ายไม่สามารถส่งมอบได้</strong> — หากผู้จำหน่ายไม่สามารถจัดหารถยนต์ตามที่ตกลงได้ภายในกำหนดเวลา ผู้จำหน่ายจะคืนเงินมัดจำให้แก่ผู้จองเต็มจำนวนภายใน 15 วันทำการ โดยผู้จองไม่มีสิทธิ์เรียกร้องค่าเสียหายเพิ่มเติม</p>
+          <p class="bk-legal"><span class="bk-legal-n">ข้อ 4.</span> <strong>การส่งมอบ</strong> — ผู้จองจะต้องชำระราคารถส่วนที่เหลือให้ครบถ้วนก่อนหรือในวันส่งมอบรถ หากไม่ชำระภายในกำหนด ผู้จำหน่ายมีสิทธิ์บอกเลิกสัญญาและริบเงินมัดจำ ผู้จำหน่ายจะส่งมอบรถยนต์ในสภาพสมบูรณ์พร้อมเอกสารครบถ้วนตามที่กฎหมายกำหนด</p>
+          <p class="bk-legal"><span class="bk-legal-n">ข้อ 5.</span> <strong>ความเสียหายก่อนส่งมอบ</strong> — หากรถยนต์ได้รับความเสียหายก่อนส่งมอบโดยไม่ใช่ความผิดของผู้จอง ผู้จำหน่ายจะซ่อมแซมให้อยู่ในสภาพเดิมหรือจัดหารถยนต์คันใหม่ทดแทน หรือคืนเงินมัดจำให้ผู้จอง ตามที่ทั้งสองฝ่ายตกลงกัน</p>
+          <p class="bk-legal"><span class="bk-legal-n">ข้อ 6.</span> <strong>การเปลี่ยนแปลงราคา</strong> — ราคารถยนต์ที่ระบุในสัญญาฉบับนี้เป็นราคา ณ วันที่ทำสัญญา หากบริษัทผู้ผลิตปรับเปลี่ยนราคาก่อนวันส่งมอบ ผู้จำหน่ายจะแจ้งให้ผู้จองทราบล่วงหน้าและทั้งสองฝ่ายจะเจรจาตกลงกัน</p>
+          <p class="bk-legal"><span class="bk-legal-n">ข้อ 7.</span> <strong>การโอนสิทธิ์</strong> — ผู้จองไม่มีสิทธิ์โอนสัญญาฉบับนี้ให้แก่บุคคลอื่นโดยไม่ได้รับความยินยอมเป็นลายลักษณ์อักษรจากผู้จำหน่าย</p>
+          <p class="bk-legal"><span class="bk-legal-n">ข้อ 8.</span> <strong>กฎหมายที่ใช้บังคับ</strong> — สัญญาฉบับนี้อยู่ภายใต้บังคับแห่งกฎหมายไทย ข้อพิพาทใดๆ ที่เกิดขึ้นจากสัญญาฉบับนี้ให้อยู่ในอำนาจของศาลที่มีเขตอำนาจในจังหวัดนครปฐม</p>
+
+          <p class="bk-legal" style="margin-top:6px;font-style:italic;color:#555;font-size:11px">
+            สัญญาฉบับนี้ทำขึ้น 2 ฉบับ มีข้อความตรงกัน คู่สัญญาแต่ละฝ่ายถือไว้ฝ่ายละ 1 ฉบับ และได้อ่านเข้าใจข้อความโดยตลอดแล้ว จึงลงลายมือชื่อไว้เป็นหลักฐาน
+          </p>
+
+          <!-- ลายเซ็นแถว 1 -->
+          <div class="bk-sig-grid3" style="margin-top:12px">
+            <div class="bk-sig-box">
+              <div style="font-weight:600;color:#1a237e;font-size:12px;margin-bottom:4px">ผู้จอง</div>
+              <div class="bk-sig-line"></div>
+              <div class="bk-sig-lbl">(<span id="p4_sig_cust"></span>)</div>
+              <div class="bk-sig-date">วันที่ ....../....../......</div>
+            </div>
+            <div class="bk-sig-box">
+              <div style="font-weight:600;color:#555;font-size:12px;margin-bottom:4px">พยาน</div>
+              <div class="bk-sig-line"></div>
+              <div class="bk-sig-lbl">( ........................................................ )</div>
+              <div class="bk-sig-date">วันที่ ....../....../......</div>
+            </div>
+            <div class="bk-sig-box">
+              <div style="font-weight:600;color:#1a237e;font-size:12px;margin-bottom:4px">ผู้จำหน่าย</div>
+              <div class="bk-sig-line"></div>
+              <div class="bk-sig-lbl">( ........................................................ )</div>
+              <div class="bk-sig-date">วันที่ ....../....../......</div>
+              <div style="font-size:10px;color:#888;margin-top:2px">บริษัท ท็อปทรี ออโต้ จำกัด</div>
+            </div>
+          </div>
+
+          <!-- ลายเซ็นแถว 2 -->
+          <div class="bk-sig-grid2">
+            <div class="bk-sig-box">
+              <div style="font-weight:600;color:#1a237e;font-size:12px;margin-bottom:4px">พนักงานขาย</div>
+              <div class="bk-sig-line"></div>
+              <div class="bk-sig-lbl">(<span id="p4_sig_sale"></span>)</div>
+              <div class="bk-sig-date">วันที่ ....../....../......</div>
+            </div>
+            <div class="bk-sig-box">
+              <div style="font-weight:600;color:#555;font-size:12px;margin-bottom:4px">ผู้จัดการฝ่ายขาย</div>
+              <div class="bk-sig-line"></div>
+              <div class="bk-sig-lbl">( ........................................................ )</div>
+              <div class="bk-sig-date">วันที่ ....../....../......</div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;padding:6px 10px;background:#f5f5f5;border:1px dashed #aaa;border-radius:4px;font-size:11px;color:#555;text-align:center">
+            สอบถามข้อมูลเพิ่มเติม: บริษัท ท็อปทรี ออโต้ จำกัด &nbsp;|&nbsp; 55/5 ม.6 ต.ท่าตลาด อ.สามพราน จ.นครปฐม 73110 &nbsp;|&nbsp; โทร. 034-966-966
+          </div>
+          <div class="bk-pgnum">หน้า 4/4</div>
+        </div>
+
+      </div><!-- /booking-print-view -->
+    </div><!-- /page-booking -->
+
+    <!-- SETTINGS PAGE (Admin only) -->
+    <div id="page-settings" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">ตั้งค่า Master Data</div>
+          <div class="page-sub">ข้อมูลที่ตั้งค่าจะบันทึกในเบราว์เซอร์และปรากฏในฟอร์มอัตโนมัติ</div>
+        </div>
+      </div>
+
+      <div class="section" style="border:2px solid #1a237e">
+        <div class="sec-title" style="color:#1a237e">🔗 เชื่อมต่อ Google Sheets</div>
+        <p style="font-size:12px;color:#666;margin-bottom:10px;line-height:1.7">
+          วาง <strong>Web App URL</strong> จาก Google Apps Script ด้านล่าง แล้วกด บันทึก URL
+        </p>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="sheets_url_input" placeholder="https://script.google.com/macros/s/..." style="flex:1;font-size:12px">
+          <button class="btn btn-p btn-sm" onclick="saveSheetUrl()">บันทึก URL</button>
+          <button class="btn btn-sm" onclick="testSheetUrl()">ทดสอบ</button>
+        </div>
+        <div id="sheets-status" style="font-size:12px;margin-top:6px;color:#888"></div>
+      </div>
+
+      <div class="section">
+        <div class="sec-title">รุ่นรถยนต์และราคา</div>
+        <div class="g3" style="margin-bottom:12px">
+          <div class="f"><label>ชื่อรุ่น</label><input type="text" id="new_model_name" placeholder="ชื่อรุ่น"></div>
+          <div class="f nr"><label>ราคาตั้ง (บาท)</label><input type="number" id="new_model_price" placeholder="749900"></div>
+          <div class="f nr"><label>ส่วนลดมาตรฐาน (บาท)</label><input type="number" id="new_model_disc" placeholder="0"></div>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="addModel()">+ เพิ่มรุ่น</button>
+        <div id="model-list" style="margin-top:14px"></div>
+      </div>
+
+      <div class="section">
+        <div class="sec-title">พนักงานขาย</div>
+        <div class="g3" style="margin-bottom:12px">
+          <div class="f"><label>ชื่อ-นามสกุล</label><input type="text" id="new_sale_name" placeholder="ชื่อพนักงาน"></div>
+          <div class="f"><label>รหัสพนักงาน</label><input type="text" id="new_sale_code" placeholder="SP001"></div>
+          <div class="f nr"><label>งบการขาย (บาท)</label><input type="number" id="new_sale_budget" placeholder="5000"></div>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="addSalePerson()">+ เพิ่มพนักงาน</button>
+        <div id="sale-list" style="margin-top:14px"></div>
+      </div>
+
+      <div class="section">
+        <div class="sec-title">รายการอุปกรณ์มาตรฐาน</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <input type="text" id="new_acc_name" placeholder="ชื่อรายการอุปกรณ์..." style="flex:1">
+          <button class="btn btn-p btn-sm" onclick="addDefaultAcc()">+ เพิ่ม</button>
+        </div>
+        <div id="default-acc-tags" style="display:flex;flex-wrap:wrap;gap:2px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ACCOUNTS — Admin / User
+// ============================================================
+const ACCOUNTS = {
+  'Top3Admin1': { password: 'AdminT3322',     role: 'admin' },
+  'user':       { password: 'Top3mgSampran',  role: 'user'  }
+};
+
+let currentRole = null;
+let currentUser = null;
+
+// ============================================================
+// LOGIN / LOGOUT
+// ============================================================
+function doLogin(){
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-err');
+
+  // ตรวจ Admin ก่อน (ต้องตรงทั้ง username และ password)
+  if(u === 'Top3Admin1' && p === 'AdminT3322'){
+    currentUser = u;
+    currentRole = 'admin';
+  }
+  // ถ้าไม่ใช่ Admin ให้ตรวจแค่ password สำหรับ User
+  else if(p === 'Top3mgSampran'){
+    currentUser = u || 'user';
+    currentRole = 'user';
+  }
+  else {
+    err.textContent = '❌ Password ไม่ถูกต้อง';
+    document.getElementById('login-pass').value = '';
+    return;
+  }
+  err.textContent = '';
+
+  // ตั้ง badge
+  const badge = document.getElementById('login-badge');
+  if(currentRole === 'admin'){
+    badge.textContent = '⚙️ Admin';
+    badge.style.cssText = 'font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#fff3cd;color:#856404';
+    // เพิ่มแท็บ Settings
+    const tabBar = document.getElementById('tab-bar');
+    if(!document.getElementById('tab-settings')){
+      const btn = document.createElement('button');
+      btn.className = 'tab';
+      btn.id = 'tab-settings';
+      btn.textContent = '⚙️ ตั้งค่า Master Data';
+      btn.onclick = function(){ showPage('settings', this); };
+      tabBar.appendChild(btn);
+    }
+  } else {
+    badge.textContent = '👤 พนักงานขาย';
+    badge.style.cssText = 'font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#d1ecf1;color:#0c5460';
+  }
+
+  // แสดง app
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app-page').style.display = 'block';
+
+  load();
+  accRows = [...db.defaultAccs];
+  buildAccRows();
+  refreshSelects();
+  // init booking tab
+  bkAccRows = [...db.defaultAccs];
+  buildBkAccRows();
+  refreshBkSelects();
+  document.getElementById('bk_booking_date').value = new Date().toISOString().slice(0,10);
+  setStatus('', 'กรอกข้อมูลให้ครบ (ชื่อลูกค้า + รุ่นรถ + พนักงานขาย) เพื่อส่งอัตโนมัติ');
+}
+
+function doLogout(){
+  if(!confirm('ออกจากระบบ?')) return;
+  currentRole = null;
+  currentUser = null;
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-err').textContent = '';
+  document.getElementById('app-page').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+  // ลบแท็บ Settings ออก
+  const t = document.getElementById('tab-settings');
+  if(t) t.remove();
+  // reset form
+  clearForm();
+  showPage('form', document.querySelector('.tab'));
+}
+
+// ============================================================
+// MASTER DATA
+// ============================================================
+let db = {
+  models: [
+    {name:'เอ็มจี 3 ไฮบริดพลัส ดี',           price:579900,  disc:75000, budget:75000},
+    {name:'เอ็มจี 3 ไฮบริดพลัส เอ็กซ์',        price:619900,  disc:75000, budget:75000},
+    {name:'เอ็มจี 4 อีเล็คทริค 2026 ดี',       price:599900,  disc:5000,  budget:5000},
+    {name:'เอ็มจี 4 อีเล็คทริค 2026 เอ็กซ์แอล',price:709900,  disc:5000,  budget:5000},
+    {name:'เอ็มจี 5 โปร ดี',                   price:629900,  disc:90000, budget:90000},
+    {name:'เอ็มจี 5 โปร เอ็กซ์',              price:669900,  disc:90000, budget:90000},
+    {name:'เอ็มจี เอส5 อีวี ดีพลัส',           price:649900,  disc:5000,  budget:5000},
+    {name:'เอ็มจี เอส5 อีวี เอ็กซ์พลัส',       price:759900,  disc:5000,  budget:5000},
+    {name:'เอ็มจี เอส5 อีวี วีพลัส',           price:849900,  disc:5000,  budget:5000},
+    {name:'เอ็มจี เออร์แบน สแตนดาร์ด',        price:529900,  disc:0,     budget:0},
+    {name:'เอ็มจี เออร์แบน แมกซ์',            price:599900,  disc:0,     budget:0},
+    {name:'เอ็มจี เออร์แบน อัลตร้า',          price:709900,  disc:0,     budget:0},
+    {name:'เอ็มจี ไอเอ็ม5 ลองเรนจ์',          price:1499900, disc:5000,  budget:5000},
+    {name:'เอ็มจี ไอเอ็ม6 พรีเมียม',          price:1349900, disc:10000, budget:10000},
+    {name:'เอ็มจี ไอเอ็ม6 ลองเรนจ์',          price:1549900, disc:10000, budget:10000},
+    {name:'เอ็มจี ไอเอ็ม6 เพอร์ฟอร์แมนซ์',    price:1749900, disc:10000, budget:10000},
+    {name:'เอ็มจี แมกซัส 7 เอ็กซ์',           price:1299000, disc:10000, budget:10000},
+    {name:'เอ็มจี แมกซัส 7 ทูโทน',            price:1319000, disc:10000, budget:10000},
+    {name:'เอ็มจี แมกซัส 9 วี',               price:1799000, disc:10000, budget:10000},
+    {name:'เอ็มจี แมกซัส 9 ทูโทน',            price:1819000, disc:10000, budget:10000}
+  ],
+  salePeople: [
+    {name:'โบ',     code:'', budget:0},
+    {name:'ยา',     code:'', budget:0},
+    {name:'นิหน่อย',code:'', budget:0},
+    {name:'ปูเป้',  code:'', budget:0},
+    {name:'อั๋น',   code:'', budget:0},
+    {name:'กุ้ง',   code:'', budget:0},
+    {name:'นัชชา', code:'', budget:0},
+    {name:'เจี๊ยบ', code:'', budget:0},
+    {name:'ไก่',    code:'', budget:0},
+    {name:'เม',     code:'', budget:0},
+    {name:'บอมบ์', code:'', budget:0},
+    {name:'โอม',   code:'', budget:0},
+    {name:'เล็ก',  code:'', budget:0},
+    {name:'อ้อ',   code:'', budget:0}
+  ],
+  defaultAccs: ['ประกันภัยชั้น 1','พรบ.','ฟิล์มกรอบ','กล่องบันทึกหลักฐาน MG','ราคาทะเบียน','กรอบป้ายทดลอง 4 แผ่น','ผ้าขัน']
+};
+let accRows = [];
+
+function save(){try{localStorage.setItem('mg_sales_db',JSON.stringify(db))}catch(e){}}
+function load(){try{const d=localStorage.getItem('mg_sales_db');if(d)db=JSON.parse(d)}catch(e){}}
+
+// ============================================================
+// GOOGLE SHEETS
+// ============================================================
+const DEFAULT_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbydOIr93wWsYeztqTzHTyuYv9biSnAbXjH6ntLTC7scNkrvERh1nls-8Yq7FR9iIPZEEA/exec';
+let SHEETS_URL = localStorage.getItem('mg_sheets_url') || DEFAULT_SHEETS_URL;
+
+function saveSheetUrl(){
+  const url = document.getElementById('sheets_url_input').value.trim();
+  if(!url){ alert('กรุณาวาง URL ก่อน'); return; }
+  if(!url.startsWith('https://script.google.com')){
+    alert('URL ไม่ถูกต้อง ต้องขึ้นต้นด้วย https://script.google.com/...');
+    return;
+  }
+  SHEETS_URL = url;
+  localStorage.setItem('mg_sheets_url', url);
+  document.getElementById('sheets-status').textContent = '✅ บันทึก URL แล้ว';
+  document.getElementById('sheets-status').style.color = '#1a7a4a';
+}
+
+function testSheetUrl(){
+  const url = document.getElementById('sheets_url_input').value.trim() || SHEETS_URL;
+  if(!url){ alert('ยังไม่มี URL'); return; }
+  const status = document.getElementById('sheets-status');
+  status.textContent = '⏳ กำลังทดสอบ...';
+  fetch(url, {mode:'no-cors'})
+    .then(()=>{ status.textContent='✅ เชื่อมต่อสำเร็จ'; status.style.color='#1a7a4a'; })
+    .catch(()=>{ status.textContent='❌ เชื่อมต่อไม่ได้'; status.style.color='#c0392b'; });
+}
+
+// ============================================================
+// AUTO-SAVE
+// ============================================================
+let autoSaveTimer = null;
+let lastSentKey = '';
+
+function setStatus(state, text){
+  const dot = document.getElementById('autosave-dot');
+  const txt = document.getElementById('autosave-text');
+  dot.className = '';
+  if(state) dot.classList.add(state);
+  if(txt) txt.textContent = text;
+}
+
+function autoSaveKey(){
+  return [gv('customer_name'), gv('car_model_sel'), gv('sale_person'), gv('price_car'), gv('net_total')].join('|');
+}
+
+function checkAutoSave(){
+  const custName = gv('customer_name').trim();
+  const carModel = document.getElementById('car_model_sel').value;
+  const salePerson = document.getElementById('sale_person').value;
+  if(!custName || !carModel || !salePerson){
+    const missing = [];
+    if(!custName) missing.push('ชื่อลูกค้า');
+    if(!carModel) missing.push('รุ่นรถ');
+    if(!salePerson) missing.push('พนักงานขาย');
+    setStatus('', 'รอกรอก: ' + missing.join(', '));
+    return;
+  }
+  const currentKey = autoSaveKey();
+  if(currentKey === lastSentKey) return;
+  setStatus('ready', `พร้อมส่งอัตโนมัติ — ${custName}`);
+  clearTimeout(autoSaveTimer);
+  let countdown = 3;
+  const tick = () => {
+    setStatus('ready', `ส่งอัตโนมัติใน ${countdown} วินาที — ${custName} · ${selText('car_model_sel').replace(/\s*\(.*\)/,'')}`);
+    if(countdown <= 0){ submitToSheets(false); }
+    else { countdown--; autoSaveTimer = setTimeout(tick, 1000); }
+  };
+  autoSaveTimer = setTimeout(tick, 1000);
+}
+
+function triggerAutoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(checkAutoSave, 800);
+}
+
+// ============================================================
+// SUBMIT TO SHEETS
+// ============================================================
+function submitToSheets(manual=false){
+  if(!SHEETS_URL){
+    if(manual) alert('ยังไม่ได้ตั้งค่า Google Sheets URL\nAdmin กรุณาไปตั้งค่าที่แท็บ ⚙️ ตั้งค่า');
+    return;
+  }
+  const custName = gv('customer_name');
+  if(!custName){ if(manual) alert('กรุณากรอกชื่อลูกค้าก่อนส่งข้อมูล'); return; }
+
+  const saleName = selText('sale_person').replace(/\s*\(.*\)/,'');
+  const carModel = selText('car_model_sel').replace(/\s*\(.*\)/,'');
+
+  const accessories = accRows.map((_,i)=>({
+    name: document.getElementById('acc_name_'+i)?.value||'',
+    free: document.getElementById('acc_free_'+i)?.value||'',
+    sell: document.getElementById('acc_sell_'+i)?.value||''
+  })).filter(a=>a.name);
+
+  const payload = {
+    sheet_type: 'sale',
+    delivery_date:gv('delivery_date'), booking_no:gv('booking_no'),
+    customer_name:custName, phone:gv('phone'), id_card:gv('id_card'),
+    birthdate:gv('birthdate'), addr_id:gv('addr_id'),
+    sale_person_name:saleName, car_model:carModel,
+    car_color:gv('car_color'), vin:gv('vin'),
+    payment_type:gv('payment_type'), finance_company:gv('finance_company'),
+    reg_province:gv('reg_province'), reg_reserve:gv('reg_reserve'),
+    price_car:gv('price_car'), disc_car:gv('disc_car'), add_acc:gv('add_acc'),
+    net_car:gv('net_car'), down:gv('down'), disc_down:gv('disc_down'),
+    net_down:gv('net_down'), reg_fee:gv('reg_fee'), plate_dep:gv('plate_dep'),
+    reserve:gv('reserve'), advance_inst:gv('advance_inst'), other_fee:gv('other_fee'),
+    net_total:gv('net_total'), monthly:gv('monthly'), monthly_pct:gv('monthly_pct'),
+    com_budget:gv('com_budget'), com_acc:gv('com_acc'), com_cashback:gv('com_cashback'),
+    com_finance:gv('com_finance'), com_acc_sale:gv('com_acc_sale'), com_other:gv('com_other'),
+    com_total:gv('com_total'), com_used:gv('com_used'),
+    com_remain_raw:(parseFloat(gv('com_total'))||0)-(parseFloat(gv('com_used'))||0),
+    note:gv('note'), accessories,
+    submitted_by: currentUser || 'unknown'
+  };
+
+  const btn = document.getElementById('btn-submit-sheets');
+  const sentKey = autoSaveKey();
+  btn.textContent = '⏳ กำลังส่ง...';
+  btn.disabled = true;
+  setStatus('sending', `กำลังส่งข้อมูล — ${custName}...`);
+
+  fetch(SHEETS_URL, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  }).then(()=>{
+    lastSentKey = sentKey;
+    const now = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    btn.textContent = '✅ ส่งแล้ว';
+    btn.style.background = '#1a7a4a';
+    setStatus('sent', `✅ ส่งแล้ว — ${custName} · ${selText('car_model_sel').replace(/\s*\(.*\)/,'')} (${now})`);
+    setTimeout(()=>{ btn.textContent='📤 ส่งเดี๋ยวนี้'; btn.style.background=''; btn.disabled=false; }, 3000);
+  }).catch(err=>{
+    if(manual) alert('ส่งไม่สำเร็จ: '+err.message);
+    setStatus('error', '❌ ส่งไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ตแล้วกด "ส่งเดี๋ยวนี้"');
+    btn.textContent='📤 ส่งเดี๋ยวนี้'; btn.style.background=''; btn.disabled=false;
+  });
+}
+
+// ============================================================
+// SUBMIT BOOKING TO SHEETS
+// ============================================================
+function submitBookingToSheets(manual=false){
+  if(!SHEETS_URL){
+    if(manual) alert('ยังไม่ได้ตั้งค่า Google Sheets URL\nAdmin กรุณาไปตั้งค่าที่แท็บ ⚙️ ตั้งค่า');
+    return;
+  }
+  const custName = gv('bk_cust_name');
+  if(!custName){ if(manual) alert('กรุณากรอกชื่อลูกค้าในใบจองก่อน'); return; }
+
+  const spIdx  = document.getElementById('bk_sale_staff').value;
+  const spName = spIdx !== '' ? (db.salePeople[spIdx]?.name||'') : '';
+  const cmIdx  = document.getElementById('bk_car_model').value;
+  const cmName = cmIdx !== '' ? (db.models[cmIdx]?.name||'') : gv('bk_car_model');
+
+  // วิธีชำระมัดจำ
+  const payMethods = [
+    document.getElementById('bk_pay_cash')?.checked     ? 'เงินสด' : '',
+    document.getElementById('bk_pay_transfer')?.checked ? 'โอนเงิน' : '',
+    document.getElementById('bk_pay_card')?.checked     ? 'บัตร' : '',
+    document.getElementById('bk_pay_check')?.checked    ? 'เช็ค' : ''
+  ].filter(Boolean).join(', ');
+
+  const buyTypeMap = {cash:'เงินสด', finance:'สินเชื่อ/เช่าซื้อ', lease:'Leasing'};
+  const buyType = buyTypeMap[document.querySelector('input[name="bk_buy_type"]:checked')?.value||'cash'];
+
+  const accData = bkAccRows.map((_,i)=>({
+    name: document.getElementById('bkacc_name_'+i)?.value||'',
+    val:  document.getElementById('bkacc_val_'+i)?.value||''
+  })).filter(a=>a.name);
+
+  const price = parseFloat(gv('bk_car_price'))||0;
+  const disc  = parseFloat(gv('bk_car_disc'))||0;
+  const net   = price - disc;
+  const vat   = net ? net*7/107 : 0;
+
+  const payload = {
+    sheet_type:     'booking',
+    timestamp:      new Date().toISOString(),
+    doc_no:         gv('bk_doc_no'),
+    booking_date:   gv('bk_booking_date'),
+    sale_staff:     spName,
+    customer_name:  custName,
+    cust_id:        gv('bk_cust_id'),
+    cust_addr:      gv('bk_cust_addr'),
+    cust_tel:       gv('bk_cust_tel'),
+    cust_email:     gv('bk_cust_email'),
+    cust_line:      gv('bk_cust_line'),
+    recv_name:      gv('bk_recv_name'),
+    recv_tel:       gv('bk_recv_tel'),
+    car_model:      cmName,
+    car_year:       gv('bk_car_year'),
+    car_color:      gv('bk_car_color'),
+    car_vin:        gv('bk_car_vin'),
+    car_price:      price,
+    car_disc:       disc,
+    car_net:        net,
+    car_vat:        Math.round(vat*100)/100,
+    deposit_amt:    gv('bk_deposit_amt'),
+    deposit_date:   gv('bk_deposit_date'),
+    pay_methods:    payMethods,
+    pay_ref:        gv('bk_pay_ref'),
+    pay_bank:       gv('bk_pay_bank'),
+    delivery_date:  gv('bk_delivery_date'),
+    delivery_note:  gv('bk_delivery_note'),
+    buy_type:       buyType,
+    sum_down:       gv('bk_sum_down'),
+    loan_amt:       gv('bk_loan_amt'),
+    loan_rate:      gv('bk_loan_rate'),
+    loan_period:    gv('bk_loan_period'),
+    extra_note:     gv('bk_extra_note'),
+    accessories:    accData,
+    submitted_by:   currentUser || 'unknown'
+  };
+
+  const btn = document.getElementById('btn-submit-booking');
+  if(btn){ btn.textContent='⏳ กำลังส่ง...'; btn.disabled=true; }
+
+  fetch(SHEETS_URL, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).then(()=>{
+    if(btn){ btn.textContent='✅ ส่งแล้ว'; btn.style.background='#1a7a4a'; }
+    if(manual) alert(`✅ ส่งข้อมูลใบจองสำเร็จ\nลูกค้า: ${custName} · ${cmName}`);
+    setTimeout(()=>{ if(btn){ btn.textContent='📤 ส่งใบจอง'; btn.style.background=''; btn.disabled=false; } }, 3000);
+  }).catch(err=>{
+    if(manual) alert('ส่งไม่สำเร็จ: '+err.message);
+    if(btn){ btn.textContent='📤 ส่งใบจอง'; btn.style.background=''; btn.disabled=false; }
+  });
+}
+
+// ============================================================
+// SAVE / LOAD FILE
+// ============================================================
+function collectFormData(){
+  const data={};
+  document.querySelectorAll('#page-form input,#page-form select,#page-form textarea').forEach(el=>{
+    if(el.id) data[el.id]=el.value;
+  });
+  const accData=[];
+  accRows.forEach((_,i)=>{
+    accData.push({
+      name:document.getElementById('acc_name_'+i)?.value||'',
+      free:document.getElementById('acc_free_'+i)?.value||'',
+      sell:document.getElementById('acc_sell_'+i)?.value||''
+    });
+  });
+  data['__acc__']=accData;
+  return data;
+}
+
+function saveToFile(){
+  const formData=collectFormData();
+  const html=document.documentElement.outerHTML;
+  const cleanHtml=html.replace(/<script id="saved-data-block">[\s\S]*?<\/script>/,'');
+  const injection=`<script id="saved-data-block">
+window.__savedFormData__=${JSON.stringify(formData)};
+window.__savedDb__=${JSON.stringify(db)};
+<\/script>`;
+  const finalHtml=cleanHtml.replace('</body>',injection+'</body>');
+  const blob=new Blob([finalHtml],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  const custName=(document.getElementById('customer_name')?.value||'').replace(/\s+/g,'_')||'draft';
+  const date=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.href=URL.createObjectURL(blob);
+  a.download=`MG_Sale_${custName}_${date}.html`;
+  a.click();
+}
+
+function loadFile(){document.getElementById('load-file-input').click();}
+
+function onFileLoad(event){
+  const file=event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const parser=new DOMParser();
+    const doc=parser.parseFromString(e.target.result,'text/html');
+    const script=doc.getElementById('saved-data-block');
+    if(!script){alert('ไม่พบข้อมูลในไฟล์นี้');return;}
+    try{
+      const tmp={};
+      new Function('window',script.textContent)(tmp);
+      if(tmp.__savedDb__){db=tmp.__savedDb__;save();refreshSelects();}
+      if(tmp.__savedFormData__){
+        const fd=tmp.__savedFormData__;
+        const accs=fd['__acc__']||[];
+        accRows=accs.map(a=>a.name);
+        buildAccRows();
+        setTimeout(()=>{
+          accs.forEach((a,i)=>{
+            if(document.getElementById('acc_name_'+i)) document.getElementById('acc_name_'+i).value=a.name;
+            if(document.getElementById('acc_free_'+i)) document.getElementById('acc_free_'+i).value=a.free;
+            if(document.getElementById('acc_sell_'+i)) document.getElementById('acc_sell_'+i).value=a.sell;
+          });
+          Object.entries(fd).forEach(([k,v])=>{
+            if(k==='__acc__') return;
+            const el=document.getElementById(k);
+            if(!el) return;
+            el.value=v;
+          });
+          calc();calcCom();calcAcc();
+        },50);
+      }
+      alert('โหลดข้อมูลสำเร็จ ✓');
+    }catch(err){alert('โหลดไม่สำเร็จ: '+err.message);}
+  };
+  reader.readAsText(file,'UTF-8');
+  event.target.value='';
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function showPage(id,tab){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  tab.classList.add('active');
+  if(id==='settings') renderSettings();
+  if(id==='form') refreshSelects();
+  if(id==='booking'){ refreshBkSelects(); }
+  // อัปเดต header ตาม tab ที่เลือก
+  const hTitle = document.getElementById('app-header-title');
+  const hSub   = document.getElementById('app-header-sub');
+  if(hTitle && hSub){
+    if(id==='booking'){
+      hTitle.textContent = 'สัญญาจองรถยนต์ MG';
+      hSub.textContent   = 'บริษัท ท็อปทรี ออโต้ จำกัด';
+    } else if(id==='settings'){
+      hTitle.textContent = 'ตั้งค่าระบบ';
+      hSub.textContent   = 'จัดการข้อมูลรุ่น / พนักงาน / URL';
+    } else {
+      hTitle.textContent = 'ใบสรุปการขาย / ตัดขาย';
+      hSub.textContent   = 'สั่งตกแต่งอุปกรณ์ / เบิก Commission';
+    }
+  }
+}
+
+// ============================================================
+// SELECTS
+// ============================================================
+function refreshSelects(){
+  const ms=document.getElementById('car_model_sel');
+  const mc=ms.value;
+  ms.innerHTML='<option value="">— เลือกรุ่น —</option>';
+  db.models.forEach((m,i)=>ms.innerHTML+=`<option value="${i}">${m.name} (${m.price.toLocaleString('th-TH')} ฿)</option>`);
+  if(mc) ms.value=mc;
+
+  const ss=document.getElementById('sale_person');
+  const sc=ss.value;
+  ss.innerHTML='<option value="">— เลือกพนักงาน —</option>';
+  db.salePeople.forEach((s,i)=>ss.innerHTML+=`<option value="${i}">${s.name}${s.code?' ('+s.code+')':''}</option>`);
+  if(sc) ss.value=sc;
+}
+
+function onCarModelChange(){
+  const idx=document.getElementById('car_model_sel').value;
+  if(idx==='') return;
+  const m=db.models[idx];
+  document.getElementById('price_car').value=m.price||'';
+  document.getElementById('disc_car').value=m.disc||'';
+  document.getElementById('com_budget').value=m.budget>0?m.budget:'';
+  calcCom(); calc();
+}
+
+function onSalePersonChange(){
+  const idx=document.getElementById('sale_person').value;
+  if(idx==='') return;
+  const s=db.salePeople[idx];
+  document.getElementById('com_budget').value=s.budget||'';
+  document.getElementById('form-sale-info').textContent=s.name+(s.code?' · '+s.code:'');
+  calcCom();
+}
+
+// ============================================================
+// CALC
+// ============================================================
+function n(id){return parseFloat(document.getElementById(id)?.value)||0;}
+
+function calc(){
+  const nc=n('price_car')-n('disc_car')+n('add_acc');
+  const nd=n('down')-n('disc_down');
+  const nt=nd+n('reg_fee')+n('plate_dep')+n('advance_inst')+n('other_fee');
+  document.getElementById('net_car').value=nc||'';
+  document.getElementById('net_down').value=nd||'';
+  document.getElementById('net_total').value=nt||'';
+  document.getElementById('s-car').textContent=nc?nc.toLocaleString('th-TH')+' ฿':'—';
+  document.getElementById('s-down').textContent=nd?nd.toLocaleString('th-TH')+' ฿':'—';
+  document.getElementById('s-total').textContent=nt?nt.toLocaleString('th-TH')+' ฿':'—';
+}
+
+function calcAcc(){
+  let t=0;
+  accRows.forEach((_,i)=>{t+=parseFloat(document.getElementById('acc_sell_'+i)?.value)||0;});
+  document.getElementById('acc-total').textContent=t.toLocaleString('th-TH');
+}
+
+function calcCom(){
+  const t=n('com_budget')+n('com_acc')+n('com_cashback')+n('com_finance')+n('com_acc_sale')+n('com_other');
+  const r=t-n('com_used');
+  document.getElementById('com_total').value=t||'';
+  document.getElementById('com_remain').value=r?r.toLocaleString('th-TH')+' บาท':'';
+  document.getElementById('s-remain').textContent=r?r.toLocaleString('th-TH')+' ฿':'—';
+}
+
+// ============================================================
+// ACC ROWS
+// ============================================================
+function buildAccRows(){
+  const c=document.getElementById('acc-rows');
+  c.innerHTML='';
+  accRows.forEach((name,i)=>{
+    const d=document.createElement('div');
+    d.className='acc-grid acc-row';
+    d.innerHTML=`<span style="font-size:12px;color:#bbb;text-align:center">${i+1}</span>
+      <input type="text" id="acc_name_${i}" value="${name}" placeholder="รายการ">
+      <input type="number" id="acc_free_${i}" placeholder="0" oninput="calcAcc()" style="text-align:right">
+      <input type="number" id="acc_sell_${i}" placeholder="0" oninput="calcAcc()" style="text-align:right">`;
+    c.appendChild(d);
+  });
+}
+
+function addAccRow(){accRows.push('');buildAccRows();}
+
+// ============================================================
+// CLEAR FORM
+// ============================================================
+function clearForm(){
+  clearTimeout(autoSaveTimer);
+  lastSentKey='';
+  document.querySelectorAll('#page-form input,#page-form select,#page-form textarea').forEach(el=>{
+    if(el.tagName==='SELECT') el.selectedIndex=0;
+    else el.value='';
+  });
+  document.getElementById('form-sale-info').textContent='—';
+  accRows=[...db.defaultAccs];
+  buildAccRows();
+  calc();calcCom();calcAcc();
+  ['s-car','s-down','s-total','s-remain'].forEach(id=>document.getElementById(id).textContent='—');
+  setStatus('','กรอกข้อมูลให้ครบ (ชื่อลูกค้า + รุ่นรถ + พนักงานขาย) เพื่อส่งอัตโนมัติ');
+}
+
+// ============================================================
+// SETTINGS (Admin)
+// ============================================================
+function renderSettings(){
+  renderModelList();renderSaleList();renderDefaultAccTags();
+  const savedUrl=localStorage.getItem('mg_sheets_url')||'';
+  const inp=document.getElementById('sheets_url_input');
+  if(inp&&savedUrl){
+    inp.value=savedUrl;
+    document.getElementById('sheets-status').textContent='✅ URL บันทึกแล้ว — พร้อมส่งข้อมูล';
+    document.getElementById('sheets-status').style.color='#1a7a4a';
+  }
+}
+
+function renderModelList(){
+  const c=document.getElementById('model-list');
+  if(!db.models.length){c.innerHTML='<div class="empty">ยังไม่มีรุ่นรถ</div>';return;}
+  c.innerHTML=db.models.map((m,i)=>`
+    <div class="list-item list-4">
+      <span style="font-weight:600;font-size:14px">${m.name}</span>
+      <span style="font-size:13px;text-align:right">${m.price.toLocaleString('th-TH')} ฿</span>
+      <span style="font-size:13px;color:#999;text-align:right">ลด ${(m.disc||0).toLocaleString('th-TH')}</span>
+      <button class="btn btn-sm btn-danger" onclick="delModel(${i})">ลบ</button>
+    </div>`).join('');
+}
+
+function renderSaleList(){
+  const c=document.getElementById('sale-list');
+  if(!db.salePeople.length){c.innerHTML='<div class="empty">ยังไม่มีพนักงาน</div>';return;}
+  c.innerHTML=db.salePeople.map((s,i)=>`
+    <div class="list-item list-4">
+      <span style="font-weight:600;font-size:14px">${s.name}</span>
+      <span style="font-size:13px;color:#999">${s.code||'—'}</span>
+      <span style="font-size:13px;text-align:right">งบ ${(s.budget||0).toLocaleString('th-TH')} ฿</span>
+      <button class="btn btn-sm btn-danger" onclick="delSale(${i})">ลบ</button>
+    </div>`).join('');
+}
+
+function renderDefaultAccTags(){
+  const c=document.getElementById('default-acc-tags');
+  if(!db.defaultAccs.length){c.innerHTML='<span style="color:#bbb;font-size:13px">ยังไม่มีรายการ</span>';return;}
+  c.innerHTML=db.defaultAccs.map((a,i)=>`
+    <span class="tag">${a}<button onclick="delDefaultAcc(${i})" title="ลบ">×</button></span>`).join('');
+}
+
+function addModel(){
+  const name=document.getElementById('new_model_name').value.trim();
+  const price=parseFloat(document.getElementById('new_model_price').value)||0;
+  const disc=parseFloat(document.getElementById('new_model_disc').value)||0;
+  if(!name){alert('กรุณาใส่ชื่อรุ่น');return;}
+  db.models.push({name,price,disc,budget:disc});
+  save();
+  ['new_model_name','new_model_price','new_model_disc'].forEach(id=>document.getElementById(id).value='');
+  renderModelList();refreshSelects();
+}
+function delModel(i){if(confirm('ลบรุ่น "'+db.models[i].name+'" ?')){db.models.splice(i,1);save();renderModelList();refreshSelects();}}
+
+function addSalePerson(){
+  const name=document.getElementById('new_sale_name').value.trim();
+  const code=document.getElementById('new_sale_code').value.trim();
+  const budget=parseFloat(document.getElementById('new_sale_budget').value)||0;
+  if(!name){alert('กรุณาใส่ชื่อพนักงาน');return;}
+  db.salePeople.push({name,code,budget});
+  save();
+  ['new_sale_name','new_sale_code','new_sale_budget'].forEach(id=>document.getElementById(id).value='');
+  renderSaleList();refreshSelects();
+}
+function delSale(i){if(confirm('ลบ "'+db.salePeople[i].name+'" ?')){db.salePeople.splice(i,1);save();renderSaleList();refreshSelects();}}
+
+function addDefaultAcc(){
+  const name=document.getElementById('new_acc_name').value.trim();
+  if(!name) return;
+  db.defaultAccs.push(name);save();
+  document.getElementById('new_acc_name').value='';
+  renderDefaultAccTags();
+}
+function delDefaultAcc(i){db.defaultAccs.splice(i,1);save();renderDefaultAccTags();}
+
+// ============================================================
+// BOOKING TAB
+// ============================================================
+let bkAccRows = [];
+
+function bkFmt(v){ const x=parseFloat(v); return isNaN(x)||!x?'':x.toLocaleString('th-TH'); }
+function bkFmtMoney(v){ const x=parseFloat(v); return isNaN(x)||!x?'—':x.toLocaleString('th-TH')+' บาท'; }
+function bkFmtDate(d){
+  if(!d) return '—';
+  try{ return new Date(d).toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'}); }
+  catch(e){ return d; }
+}
+
+function refreshBkSelects(){
+  // รุ่นรถ
+  const ms = document.getElementById('bk_car_model');
+  if(!ms) return;
+  const mv = ms.value;
+  ms.innerHTML = '<option value="">— เลือกรุ่น —</option>';
+  db.models.forEach((m,i) => ms.innerHTML += `<option value="${i}" data-price="${m.price}">${m.name} (${m.price.toLocaleString('th-TH')} ฿)</option>`);
+  if(mv) ms.value = mv;
+  // พนักงาน
+  const ss = document.getElementById('bk_sale_staff');
+  if(!ss) return;
+  const sv = ss.value;
+  ss.innerHTML = '<option value="">— เลือกพนักงาน —</option>';
+  db.salePeople.forEach((s,i) => ss.innerHTML += `<option value="${i}">${s.name}${s.code?' ('+s.code+')':''}</option>`);
+  if(sv) ss.value = sv;
+  // สร้างแถวอุปกรณ์ถ้ายังไม่มี
+  if(!bkAccRows.length){ bkAccRows = [...db.defaultAccs]; buildBkAccRows(); }
+}
+
+function onBkCarModelChange(){
+  const sel = document.getElementById('bk_car_model');
+  const idx = sel.value;
+  if(idx === '') return;
+  const m = db.models[idx];
+  document.getElementById('bk_car_price').value = m.price || '';
+  document.getElementById('bk_car_disc').value = m.disc || '';
+  bkCalcPrice();
+}
+
+function bkCalcPrice(){
+  const price = parseFloat(document.getElementById('bk_car_price')?.value)||0;
+  const disc  = parseFloat(document.getElementById('bk_car_disc')?.value)||0;
+  const net = price - disc;
+  if(document.getElementById('bk_car_net')) document.getElementById('bk_car_net').value = net||'';
+  bkCalcPayBreak();
+}
+
+function bkCalcPayBreak(){
+  const net    = parseFloat(document.getElementById('bk_car_net')?.value)||0;
+  const dep    = parseFloat(document.getElementById('bk_deposit_amt')?.value)||0;
+  const down   = parseFloat(document.getElementById('bk_sum_down')?.value)||0;
+  const type   = document.querySelector('input[name="bk_buy_type"]:checked')?.value||'cash';
+  let loan = 0, monthly = 0;
+  if(type !== 'cash'){
+    const lAmt  = parseFloat(document.getElementById('bk_loan_amt')?.value)||0;
+    const rate  = parseFloat(document.getElementById('bk_loan_rate')?.value)||0;
+    const period= parseFloat(document.getElementById('bk_loan_period')?.value)||0;
+    loan = lAmt || (net - dep - down > 0 ? net - dep - down : 0);
+    if(loan && period) monthly = (loan + loan * rate/100 * period/12) / period;
+  }
+  // อัพเดทสรุปใน form (ไม่บังคับ)
+}
+
+function bkToggleFinance(){
+  const type = document.querySelector('input[name="bk_buy_type"]:checked')?.value||'cash';
+  const fs = document.getElementById('bk_finance_section');
+  if(fs) fs.style.display = (type==='finance'||type==='lease') ? 'block' : 'none';
+  bkCalcPayBreak();
+}
+
+function addBkAcc(name=''){
+  bkAccRows.push(name);
+  buildBkAccRows();
+}
+
+function buildBkAccRows(){
+  const c = document.getElementById('bk-acc-rows');
+  if(!c) return;
+  c.innerHTML = '';
+  bkAccRows.forEach((name,i) => {
+    const d = document.createElement('div');
+    d.className = 'acc-grid acc-row';
+    d.innerHTML = `<span style="font-size:12px;color:#bbb;text-align:center">${i+1}</span>
+      <input type="text" id="bkacc_name_${i}" value="${name||''}" placeholder="รายการของแถม/อุปกรณ์">
+      <input type="number" id="bkacc_val_${i}" placeholder="มูลค่า" style="text-align:right">
+      <button class="btn btn-sm btn-danger" onclick="removeBkAcc(${i})">ลบ</button>`;
+    c.appendChild(d);
+  });
+}
+
+function removeBkAcc(i){
+  bkAccRows.splice(i,1);
+  buildBkAccRows();
+}
+
+function clearBooking(){
+  document.querySelectorAll('#booking-form-view input:not([type=radio]):not([type=checkbox]), #booking-form-view select').forEach(el=>{
+    if(el.tagName==='SELECT') el.selectedIndex=0;
+    else el.value='';
+  });
+  // reset checkboxes
+  ['bk_pay_cash','bk_pay_transfer','bk_pay_card','bk_pay_check','bk_del_showroom','bk_del_home'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.checked = (id==='bk_del_showroom');
+  });
+  document.getElementById('bk_buy_cash').checked = true;
+  bkToggleFinance();
+  bkAccRows = [...db.defaultAccs];
+  buildBkAccRows();
+  document.getElementById('bk_booking_date').value = new Date().toISOString().slice(0,10);
+}
+
+function fillBookingFromSale(){
+  // mapping: booking field id → sale form field id
+  const map = {
+    'bk_cust_name': 'customer_name',
+    'bk_cust_id': 'id_card',
+    'bk_cust_addr': 'addr_id',
+    'bk_cust_tel': 'phone',
+    'bk_car_color': 'car_color',
+    'bk_car_price': 'price_car',
+    'bk_car_disc': 'disc_car',
+    'bk_deposit_amt': 'reserve',
+    'bk_sum_down': 'down',
+    'bk_delivery_date': 'delivery_date',
+    'bk_extra_note': 'note',
+    'bk_doc_no': 'booking_no'
+  };
+  Object.entries(map).forEach(([bid,sid]) => {
+    const val = gv(sid);
+    const el = document.getElementById(bid);
+    if(el && val) el.value = val;
+  });
+  // รุ่นรถ
+  const cm = document.getElementById('car_model_sel').value;
+  if(cm !== '') document.getElementById('bk_car_model').value = cm;
+  // พนักงาน
+  const sp = document.getElementById('sale_person').value;
+  if(sp !== '') document.getElementById('bk_sale_staff').value = sp;
+  // ปีรุ่น
+  if(!gv('bk_car_year')){
+    const el = document.getElementById('bk_car_year');
+    if(el) el.value = new Date().getFullYear()+543; // พ.ศ.
+  }
+  // อุปกรณ์
+  const accs = [];
+  accRows.forEach((_,i) => {
+    const nm = document.getElementById('acc_name_'+i)?.value||'';
+    if(nm) accs.push({name:nm, val:document.getElementById('acc_free_'+i)?.value||''});
+  });
+  if(accs.length){
+    bkAccRows = accs.map(a=>a.name);
+    buildBkAccRows();
+    setTimeout(()=>{
+      accs.forEach((a,j)=>{
+        const v = document.getElementById('bkacc_val_'+j);
+        if(v && a.val) v.value = a.val;
+      });
+    },50);
+  }
+  bkCalcPrice();
+  alert('✅ ดึงข้อมูลจากใบตัดขายสำเร็จ');
+}
+
+function fillSaleFromBooking(){
+  // ตรวจว่ามีข้อมูลในใบจองหรือเปล่า
+  const custName = gv('bk_cust_name');
+  if(!custName){
+    alert('⚠️ ยังไม่มีข้อมูลในใบจอง\nกรุณากรอกใบจองก่อน หรือไปที่แท็บ "ใบจองรถยนต์"');
+    return;
+  }
+  // mapping: sale field id ← booking field id
+  const map = {
+    'customer_name': 'bk_cust_name',
+    'phone':         'bk_cust_tel',
+    'id_card':       'bk_cust_id',
+    'addr_id':       'bk_cust_addr',
+    'car_color':     'bk_car_color',
+    'price_car':     'bk_car_price',
+    'disc_car':      'bk_car_disc',
+    'reserve':       'bk_deposit_amt',
+    'down':          'bk_sum_down',
+    'delivery_date': 'bk_delivery_date',
+    'note':          'bk_extra_note',
+    'booking_no':    'bk_doc_no'
+  };
+  Object.entries(map).forEach(([sid, bid]) => {
+    const val = gv(bid);
+    const el = document.getElementById(sid);
+    if(el && val) el.value = val;
+  });
+  // รุ่นรถ — sync index
+  const cmIdx = document.getElementById('bk_car_model').value;
+  if(cmIdx !== '') document.getElementById('car_model_sel').value = cmIdx;
+  // พนักงาน — sync index
+  const spIdx = document.getElementById('bk_sale_staff').value;
+  if(spIdx !== '') document.getElementById('sale_person').value = spIdx;
+  // อุปกรณ์จากใบจอง → ใบตัดขาย
+  const bkAccData = bkAccRows.map((_,i)=>({
+    name: document.getElementById('bkacc_name_'+i)?.value||'',
+    val:  document.getElementById('bkacc_val_'+i)?.value||''
+  })).filter(a=>a.name);
+  if(bkAccData.length){
+    accRows = bkAccData.map(a=>a.name);
+    buildAccRows();
+    setTimeout(()=>{
+      bkAccData.forEach((a,i)=>{
+        const frEl = document.getElementById('acc_free_'+i);
+        if(frEl && a.val) frEl.value = a.val;
+      });
+      calcAcc();
+    },50);
+  }
+  // trigger recalc
+  if(cmIdx !== '') onCarModelChange(); else calc();
+  onSalePersonChange();
+  alert('✅ ดึงข้อมูลจากใบจองสำเร็จ');
+}
+
+function fmtDate(d){
+  if(!d) return '—';
+  try{ return new Date(d).toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'}); }
+  catch(e){ return d; }
+}
+function fmtMoney(v){
+  const x = parseFloat(v);
+  if(!x) return '—';
+  return x.toLocaleString('th-TH') + ' บาท';
+}
+
+function printBooking(){
+  // ส่งข้อมูลเข้า Sheets อัตโนมัติพร้อมกับพิมพ์
+  submitBookingToSheets(false);
+
+  // helper
+  const s = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val||''; };
+
+  // ---- รวบรวมข้อมูล ----
+  const docNo   = gv('bk_doc_no');
+  const custName = gv('bk_cust_name');
+  const spIdx   = document.getElementById('bk_sale_staff').value;
+  const spName  = spIdx!=='' ? (db.salePeople[spIdx]?.name||'') : '';
+  const cmIdx   = document.getElementById('bk_car_model').value;
+  const cmName  = cmIdx!=='' ? (db.models[cmIdx]?.name||'') : '';
+
+  // pay methods
+  const payMethods = ['เงินสด','โอนเงิน','บัตรเครดิต/เดบิต','เช็ค']
+    .filter((_,i)=>[document.getElementById('bk_pay_cash'),document.getElementById('bk_pay_transfer'),document.getElementById('bk_pay_card'),document.getElementById('bk_pay_check')][i]?.checked)
+    .join(', ');
+
+  // delivery place
+  const delPlace = [document.getElementById('bk_del_showroom')?.checked?'ที่ Showroom':'', document.getElementById('bk_del_home')?.checked?'จัดส่งถึงบ้าน':'']
+    .filter(Boolean).join(', ');
+
+  // buy type
+  const buyTypeMap = {cash:'ซื้อเงินสด',finance:'สินเชื่อ/เช่าซื้อ',lease:'Leasing'};
+  const buyType = buyTypeMap[document.querySelector('input[name="bk_buy_type"]:checked')?.value||'cash'];
+
+  // ราคา
+  const price  = parseFloat(gv('bk_car_price'))||0;
+  const disc   = parseFloat(gv('bk_car_disc'))||0;
+  const net    = price-disc;
+  const vat    = net ? net*7/107 : 0;
+  const dep    = parseFloat(gv('bk_deposit_amt'))||0;
+  const down   = parseFloat(gv('bk_sum_down'))||0;
+  const lAmt   = parseFloat(gv('bk_loan_amt'))||0;
+  const rate   = parseFloat(gv('bk_loan_rate'))||0;
+  const period = parseFloat(gv('bk_loan_period'))||0;
+  const loan   = lAmt||(net-dep-down>0?net-dep-down:0);
+  const monthly = (loan && period) ? (loan + loan*rate/100*period/12)/period : 0;
+
+  // อุปกรณ์
+  const accData = bkAccRows.map((_,i)=>({
+    name: document.getElementById('bkacc_name_'+i)?.value||'',
+    val:  parseFloat(document.getElementById('bkacc_val_'+i)?.value)||0
+  })).filter(a=>a.name);
+  const accTotal = accData.reduce((s,a)=>s+a.val,0);
+
+  // ---- เติม Page 1 ----
+  s('p1_doc_no', docNo);
+  s('p1_cust_name', custName);
+  s('p1_cust_id', gv('bk_cust_id'));
+  s('p1_cust_addr', gv('bk_cust_addr'));
+  s('p1_cust_tel', gv('bk_cust_tel'));
+  s('p1_cust_email', gv('bk_cust_email'));
+  s('p1_cust_line', gv('bk_cust_line'));
+  s('p1_recv_name', gv('bk_recv_name'));
+  s('p1_recv_tel', gv('bk_recv_tel'));
+  s('p1_sale_staff', spName);
+  s('p1_booking_date', bkFmtDate(gv('bk_booking_date')));
+
+  // ---- เติม Page 2 ----
+  s('p2_doc_no', docNo); s('p2_cust_name', custName);
+  s('p2_car_model', cmName);
+  s('p2_car_year', gv('bk_car_year'));
+  s('p2_car_color', gv('bk_car_color'));
+  s('p2_car_vin', gv('bk_car_vin'));
+  s('p2_car_price', price?price.toLocaleString('th-TH')+' บาท':'');
+  s('p2_car_disc', disc?disc.toLocaleString('th-TH')+' บาท':'');
+  s('p2_car_net', net?net.toLocaleString('th-TH')+' บาท':'');
+  s('p2_deposit_amt', dep?dep.toLocaleString('th-TH')+' บาท':'');
+  s('p2_deposit_date', bkFmtDate(gv('bk_deposit_date')));
+  s('p2_pay_methods', payMethods||'—');
+  s('p2_pay_ref', gv('bk_pay_ref'));
+  s('p2_pay_bank', gv('bk_pay_bank'));
+
+  // อุปกรณ์ page 2
+  const accBody = document.getElementById('p2_acc_body');
+  if(accBody){
+    accBody.innerHTML = accData.length ? accData.map((a,i)=>
+      `<tr><td style="text-align:center">${i+1}</td><td>${a.name}</td><td style="text-align:right">${a.val?a.val.toLocaleString('th-TH'):''}</td><td></td></tr>`
+    ).join('') : '<tr><td colspan="4" style="text-align:center;color:#999">—</td></tr>';
+  }
+  s('p2_acc_total', accTotal?accTotal.toLocaleString('th-TH')+' บาท':'—');
+
+  // ---- เติม Page 3 ----
+  s('p3_doc_no', docNo); s('p3_cust_name', custName);
+  s('p3_delivery_date', bkFmtDate(gv('bk_delivery_date')));
+  s('p3_delivery_note', gv('bk_delivery_note'));
+  s('p3_delivery_place', delPlace||'—');
+  s('p3_buy_type', buyType);
+  s('p3_sum_price', price?price.toLocaleString('th-TH')+' บาท':'—');
+  s('p3_sum_disc', disc?disc.toLocaleString('th-TH')+' บาท':'—');
+  s('p3_sum_net', net?net.toLocaleString('th-TH')+' บาท':'—');
+  s('p3_sum_vat', vat?vat.toLocaleString('th-TH',{maximumFractionDigits:2})+' บาท':'—');
+  s('p3_sum_deposit', dep?dep.toLocaleString('th-TH')+' บาท':'—');
+  s('p3_sum_down', down?down.toLocaleString('th-TH')+' บาท':'—');
+  s('p3_sum_loan', loan?loan.toLocaleString('th-TH')+' บาท':'—');
+  s('p3_sum_monthly', monthly?monthly.toLocaleString('th-TH',{maximumFractionDigits:2})+' บาท/เดือน':'—');
+  s('p3_extra_note', gv('bk_extra_note'));
+
+  // finance detail
+  const p3fin = document.getElementById('p3_finance_detail');
+  const isFin = (document.querySelector('input[name="bk_buy_type"]:checked')?.value||'cash')!=='cash';
+  if(p3fin) p3fin.style.display = isFin ? 'block' : 'none';
+  if(isFin){
+    s('p3_loan_amt', loan?loan.toLocaleString('th-TH'):'');
+    s('p3_loan_rate', gv('bk_loan_rate')||'');
+    s('p3_loan_period', gv('bk_loan_period')||'');
+  }
+
+  // ---- เติม Page 4 ----
+  s('p4_doc_no', docNo); s('p4_cust_name', custName);
+  s('p4_sig_cust', custName||'.....................................................');
+  s('p4_sig_sale', spName||'.....................................................');
+
+  // ---- สลับ view แล้วพิมพ์ ----
+  document.getElementById('booking-form-view').style.display = 'none';
+  document.getElementById('booking-print-view').style.display = 'block';
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{
+      document.getElementById('booking-print-view').style.display = 'none';
+      document.getElementById('booking-form-view').style.display = 'block';
+    }, 500);
+  }, 250);
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function gv(id){return document.getElementById(id)?.value||'';}
+function selText(id){const el=document.getElementById(id);return el?.options[el.selectedIndex]?.text||'';}
+
+// ============================================================
+// EXCEL EXPORT
+// ============================================================
+function exportExcel(){
+  const saleName=selText('sale_person').replace(/\s*\(.*\)/,'');
+  const carModel=selText('car_model_sel').replace(/\s*\(.*\)/,'');
+  const rows=[
+    ['ใบสรุปการขาย MG','','',''],[''],
+    ['วันที่ส่งมอบ',gv('delivery_date'),'เล่มที่ใบจอง',gv('booking_no')],
+    ['ชื่อลูกค้า',gv('customer_name'),'เบอร์ติดต่อ',gv('phone')],
+    ['วันเกิด',gv('birthdate'),'เลขบัตรประชาชน',gv('id_card')],
+    ['พนักงานขาย',saleName,'รุ่นรถ',carModel],
+    ['สี',gv('car_color'),'เลขตัวถัง',gv('vin')],
+    ['วิธีการซื้อ',gv('payment_type'),'บริษัทไฟแนนซ์',gv('finance_company')],
+    ['จดทะเบียนจังหวัด',gv('reg_province'),'จองทะเบียน',gv('reg_reserve')],
+    ['ที่อยู่',gv('addr_id'),'',''],[''],
+    ['=== รายละเอียดการขาย ===','','',''],
+    ['ราคารถยนต์',gv('price_car'),'ส่วนลด',gv('disc_car')],
+    ['บวกอุปกรณ์',gv('add_acc'),'ราคาสุทธิ',gv('net_car')],
+    ['เงินดาวน์',gv('down'),'ส่วนลดดาวน์',gv('disc_down')],
+    ['เงินดาวน์สุทธิ',gv('net_down'),'ค่าจดทะเบียน',gv('reg_fee')],
+    ['ค่ามัดจำป้ายแดง',gv('plate_dep'),'เงินจอง',gv('reserve')],
+    ['ค่างวดล่วงหน้า',gv('advance_inst'),'อื่นๆ',gv('other_fee')],
+    ['ยอดชำระสุทธิ',gv('net_total'),'',''],
+    ['ยอดผ่อน',gv('monthly'),'ระยะเวลา/ดอกเบี้ย',gv('monthly_pct')],[''],
+    ['=== อุปกรณ์ตกแต่ง ===','','',''],
+    ['#','รายการ','แถม (บาท)','ขาย (บาท)'],
+    ...accRows.map((_,i)=>[i+1,
+      document.getElementById('acc_name_'+i)?.value||'',
+      document.getElementById('acc_free_'+i)?.value||0,
+      document.getElementById('acc_sell_'+i)?.value||0]),[''],
+    ['=== Commission ===','','',''],
+    ['งบการขาย',gv('com_budget'),'บวกอุปกรณ์',gv('com_acc')],
+    ['ศักแบค',gv('com_cashback'),'คอมไฟแนนซ์',gv('com_finance')],
+    ['ขายอุปกรณ์',gv('com_acc_sale'),'อื่นๆ',gv('com_other')],
+    ['รวมสุทธิ',gv('com_total'),'ใช้งบไป',gv('com_used')],
+    ['คงเหลือสุทธิ',gv('com_remain'),'',''],[''],
+    ['หมายเหตุ',gv('note'),'','']
+  ];
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:22},{wch:30},{wch:22},{wch:30}];
+  XLSX.utils.book_append_sheet(wb,ws,'ใบตัดขาย');
+  const cname=gv('customer_name')||'customer';
+  const date=gv('delivery_date')||new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,`MG_Sale_${cname}_${date}.xlsx`);
+}
+</script>
+</body>
+</html>
