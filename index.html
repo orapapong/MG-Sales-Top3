@@ -129,20 +129,35 @@ input[readonly]{background:#f3f3f1;color:#888;cursor:default}
   .g3{grid-template-columns:repeat(2,1fr)}
 }
 @media print{
-  #autosave-bar,.tab-bar,.btns,.btn,#page-form,#page-settings,.logout-btn,#booking-form-view{display:none!important}
+  #autosave-bar,.tab-bar,.btns,.btn,#page-settings,.logout-btn{display:none!important}
   #login-page{display:none!important}
   #app-page{display:block!important}
-  #page-booking{display:block!important}
-  #booking-print-view{display:block!important}
   body{background:#fff;font-size:12px}
   .container{max-width:100%;padding:0}
-  /* 2-page A4 print layout */
+
+  /* --- พิมพ์ใบจอง --- */
+  body.print-booking #page-booking{display:block!important}
+  body.print-booking #booking-form-view{display:none!important}
+  body.print-booking #booking-print-view{display:block!important}
+  body.print-booking #page-form{display:none!important}
+
+  /* --- พิมพ์ใบตัดขาย --- */
+  body.print-sale #page-form{display:block!important}
+  body.print-sale #sale-print-view{display:block!important;background:#fff;padding:0}
+  body.print-sale #page-booking{display:none!important}
+  /* ซ่อน form elements ใน page-form ตอนพิมพ์ใบตัดขาย */
+  body.print-sale .sale-form-content{display:none!important}
+
+  /* A4 layout สำหรับทุก bk-page */
   .bk-page{width:210mm;height:297mm;background:#fff;margin:0;padding:10mm 14mm;page-break-after:always;box-shadow:none;overflow:hidden;display:flex;flex-direction:column}
   .bk-page:last-child{page-break-after:auto}
   .bk-field-line:focus{background:transparent!important}
   td input:focus{background:transparent!important}
   .bk-finance-section{display:block!important}
 }
+
+/* ===== SALE PRINT VIEW ===== */
+#sale-print-view{background:#e0e0e0;padding:0}
 
 /* ===== BOOKING — 4-PAGE A4 PRINT STYLES ===== */
 /* Screen wrapper for booking pages */
@@ -292,8 +307,10 @@ select.bk-field-line{cursor:pointer}
           <button class="btn" onclick="fillSaleFromBooking()">📄 ดึงจากใบจอง</button>
           <button class="btn" onclick="loadFile()" title="เปิดไฟล์ที่บันทึกไว้">📂 โหลดไฟล์</button>
           <button class="btn" onclick="saveToFile()" title="บันทึกข้อมูลลงไฟล์ใหม่">💾 บันทึก</button>
+          <button class="btn btn-p" onclick="document.getElementById('ocr-file-input').click()" title="ถ่ายรูปหรือเลือกรูปใบอนุมัติธนาคาร แล้วให้ระบบอ่านข้อมูลให้อัตโนมัติ">📎 แนบใบอนุมัติ</button>
           <button class="btn" onclick="exportExcel()">⬇ Excel</button>
           <input type="file" id="load-file-input" accept=".html" style="display:none" onchange="onFileLoad(event)">
+          <input type="file" id="ocr-file-input" accept="image/*" capture="environment" style="display:none" onchange="startOCR(event)">
         </div>
       </div>
 
@@ -411,6 +428,185 @@ select.bk-field-line{cursor:pointer}
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
         <button class="btn" onclick="clearForm()">↺ ล้างข้อมูล</button>
         <button class="btn btn-p" onclick="exportExcel()">⬇ Export Excel</button>
+        <button class="btn btn-p" style="background:#c62828" onclick="printSaleForm()">🖨️ พรีวิว / PDF</button>
+      </div>
+    </div>
+
+    <!-- OCR MODAL -->
+    <div id="ocr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;overflow-y:auto">
+      <div style="background:#fff;max-width:520px;margin:24px auto;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.3)">
+        <div style="background:#1a237e;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-weight:700;font-size:15px">📎 อ่านใบอนุมัติธนาคาร</div>
+          <button onclick="closeOCR()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">✕</button>
+        </div>
+
+        <!-- step 1: preview รูป + progress -->
+        <div id="ocr-step1" style="padding:18px">
+          <div id="ocr-img-wrap" style="text-align:center;margin-bottom:12px">
+            <img id="ocr-preview" style="max-width:100%;max-height:320px;border-radius:6px;border:1px solid #ddd">
+          </div>
+          <div id="ocr-progress-wrap" style="display:none">
+            <div style="font-size:13px;color:#555;margin-bottom:6px" id="ocr-status">กำลังอ่านข้อมูล...</div>
+            <div style="background:#e8eaf6;border-radius:4px;height:8px;overflow:hidden">
+              <div id="ocr-bar" style="background:#3949ab;height:100%;width:0%;transition:width 0.3s"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- step 2: ผลลัพธ์ที่อ่านได้ -->
+        <div id="ocr-step2" style="display:none;padding:0 18px 18px">
+          <div style="font-size:13px;font-weight:600;color:#1a237e;margin-bottom:10px;padding-top:4px">✅ ข้อมูลที่อ่านได้ — ตรวจสอบก่อนกรอก</div>
+          <div style="display:grid;gap:8px" id="ocr-result-grid"></div>
+          <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+            <button onclick="closeOCR()" style="padding:8px 18px;border:1px solid #aaa;background:#fff;border-radius:6px;cursor:pointer;font-size:13px">ยกเลิก</button>
+            <button onclick="applyOCR()" style="padding:8px 22px;background:#1a237e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">✔ กรอกข้อมูลลงฟอร์ม</button>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:#e53935;background:#fff3f3;padding:8px;border-radius:4px">
+            ⚠️ OCR อาจอ่านตัวเลขผิดพลาดได้ โปรดตรวจสอบทุกครั้งก่อนกด "กรอก"
+          </div>
+        </div>
+
+        <!-- step 3: error -->
+        <div id="ocr-step3" style="display:none;padding:18px;text-align:center;color:#c62828">
+          <div style="font-size:32px;margin-bottom:8px">⚠️</div>
+          <div id="ocr-error-msg" style="font-size:13px"></div>
+          <button onclick="closeOCR()" style="margin-top:14px;padding:8px 22px;background:#fff;border:1px solid #aaa;border-radius:6px;cursor:pointer">ปิด</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALE PRINT VIEW -->
+    <div id="sale-print-view" style="display:none">
+      <div style="padding:12px;background:#f5f5f5;display:flex;gap:8px;justify-content:space-between;align-items:center;border-bottom:1px solid #ddd">
+        <span style="font-weight:600;color:#1a237e">🖨️ พรีวิวใบตัดขาย</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="closeSalePrint()">← กลับแก้ไข</button>
+          <button class="btn btn-p" style="background:#c62828" onclick="salePrint()">🖨️ พิมพ์ / บันทึก PDF</button>
+        </div>
+      </div>
+
+      <!-- A4 PAGE -->
+      <div class="bk-page" id="sale-page-1" style="font-size:11px;padding:8mm 12mm">
+        <!-- HEADER -->
+        <div style="display:flex;align-items:center;border-bottom:2px solid #1a237e;padding-bottom:3px;margin-bottom:4px">
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;color:#1a237e">ใบสรุปการขาย / ตัดขาย</div>
+            <div style="font-size:10px;color:#555">บริษัท ท็อปทรี ออโต้ จำกัด &nbsp;|&nbsp; Top3 Auto Co., Ltd. &nbsp;|&nbsp; เอ็มจี สมุทรสาคร</div>
+          </div>
+          <div style="text-align:right;font-size:10px">
+            <div>เลขที่ใบจอง: <strong id="sl_booking_no">—</strong></div>
+            <div>วันที่ส่งมอบ: <strong id="sl_delivery_date">—</strong></div>
+          </div>
+        </div>
+
+        <!-- แถว 1: ลูกค้า + รถ (2 คอลัมน์) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+          <!-- ลูกค้า -->
+          <div>
+            <div class="bk-sec" style="margin:2px 0 2px">ข้อมูลลูกค้า</div>
+            <div class="bk-fr"><span class="bk-lbl">ชื่อ:</span><span id="sl_cust_name" style="flex:1;border-bottom:1px solid #aaa;padding:0 3px"></span></div>
+            <div class="bk-fr"><span class="bk-lbl">บัตร ปชช.:</span><span id="sl_id_card" style="flex:1;border-bottom:1px solid #aaa;padding:0 3px"></span></div>
+            <div class="bk-fr"><span class="bk-lbl">โทร:</span><span id="sl_phone" style="flex:1;border-bottom:1px solid #aaa;padding:0 3px"></span></div>
+            <div class="bk-fr"><span class="bk-lbl">ที่อยู่:</span><span id="sl_addr" style="flex:1;border-bottom:1px solid #aaa;padding:0 3px"></span></div>
+          </div>
+          <!-- รถ + พนักงาน -->
+          <div>
+            <div class="bk-sec" style="margin:2px 0 2px">ข้อมูลรถ / พนักงาน</div>
+            <div class="bk-fr"><span class="bk-lbl">รุ่น:</span><span id="sl_model" style="flex:1;border-bottom:1px solid #aaa;padding:0 3px"></span></div>
+            <div class="bk-fr"><span class="bk-lbl">สี / VIN:</span><span id="sl_color" style="border-bottom:1px solid #aaa;padding:0 3px;min-width:40px"></span><span style="margin:0 4px;color:#bbb">|</span><span id="sl_vin" style="flex:1;border-bottom:1px solid #aaa;padding:0 3px;font-size:10px"></span></div>
+            <div class="bk-fr"><span class="bk-lbl">จด จ.:</span><span id="sl_reg_prov" style="border-bottom:1px solid #aaa;padding:0 3px;min-width:60px"></span><span style="margin:0 4px;color:#bbb">|</span><span class="bk-lbl">วิธีซื้อ:</span><span id="sl_payment_type" style="flex:1;border-bottom:1px solid #aaa;padding:0 3px"></span></div>
+            <div class="bk-fr"><span class="bk-lbl">พนักงาน:</span><span id="sl_sale_person" style="flex:1;border-bottom:1px solid #aaa;padding:0 3px"></span></div>
+            <div class="bk-fr"><span class="bk-lbl">ไฟแนนซ์:</span><span id="sl_finance_co" style="flex:1;border-bottom:1px solid #aaa;padding:0 3px"></span></div>
+          </div>
+        </div>
+
+        <!-- แถว 2: ราคา | อุปกรณ์ | Commission (3 คอลัมน์) -->
+        <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:0 10px;margin-top:4px">
+
+          <!-- คอลัมน์ 1: ราคา -->
+          <div>
+            <div class="bk-sec" style="margin:2px 0 2px">รายละเอียดราคา (บาท)</div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">ราคารถยนต์</div><div class="bk-fin-val" id="sl_price_car"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">ส่วนลดราคารถ</div><div class="bk-fin-val" id="sl_disc_car"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">บวกอุปกรณ์</div><div class="bk-fin-val" id="sl_add_acc"></div></div>
+            <div class="bk-fin-row" style="font-weight:700;background:#e8eaf6"><div class="bk-fin-lbl">ราคารถสุทธิ</div><div class="bk-fin-val" id="sl_net_car"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">เงินดาวน์</div><div class="bk-fin-val" id="sl_down"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">ส่วนลดเงินดาวน์</div><div class="bk-fin-val" id="sl_disc_down"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">ค่าจดทะเบียน</div><div class="bk-fin-val" id="sl_reg_fee"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">ค่ามัดจำป้ายแดง</div><div class="bk-fin-val" id="sl_plate_dep"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">เงินจอง (หัก)</div><div class="bk-fin-val" id="sl_reserve"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">ค่างวดล่วงหน้า</div><div class="bk-fin-val" id="sl_advance"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">อื่นๆ</div><div class="bk-fin-val" id="sl_other_fee"></div></div>
+            <div class="bk-fin-row" style="font-weight:700;background:#e8eaf6"><div class="bk-fin-lbl">ยอดชำระสุทธิ</div><div class="bk-fin-val" id="sl_net_total"></div></div>
+            <div style="font-size:10px;margin-top:3px;color:#555">
+              ผ่อน: <span id="sl_monthly" style="font-weight:600;color:#111"></span> บ./เดือน &nbsp;
+              <span id="sl_monthly_pct" style="color:#111"></span>
+            </div>
+          </div>
+
+          <!-- คอลัมน์ 2: อุปกรณ์ -->
+          <div>
+            <div class="bk-sec" style="margin:2px 0 2px">รายการอุปกรณ์ตกแต่ง</div>
+            <table style="width:100%;border-collapse:collapse;font-size:10px">
+              <thead>
+                <tr style="background:#e8eaf6">
+                  <th style="width:18px;padding:2px 3px;text-align:center;border:1px solid #c5cae9">#</th>
+                  <th style="padding:2px 4px;text-align:left;border:1px solid #c5cae9">รายการ</th>
+                  <th style="width:54px;padding:2px 4px;text-align:right;border:1px solid #c5cae9">แถม</th>
+                  <th style="width:54px;padding:2px 4px;text-align:right;border:1px solid #c5cae9">ขาย</th>
+                </tr>
+              </thead>
+              <tbody id="sl_acc_body"></tbody>
+              <tfoot>
+                <tr style="background:#f5f5f5;font-weight:600">
+                  <td colspan="2" style="padding:2px 4px;text-align:right;border:1px solid #c5cae9">รวม</td>
+                  <td style="padding:2px 4px;text-align:right;border:1px solid #c5cae9" id="sl_acc_free_total"></td>
+                  <td style="padding:2px 4px;text-align:right;border:1px solid #c5cae9" id="sl_acc_sell_total"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- คอลัมน์ 3: Commission -->
+          <div>
+            <div class="bk-sec" style="margin:2px 0 2px">Commission (ภายใน)</div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">งบการขาย</div><div class="bk-fin-val" id="sl_com_budget"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">บวกอุปกรณ์</div><div class="bk-fin-val" id="sl_com_acc"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">ศักแบค</div><div class="bk-fin-val" id="sl_com_cashback"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">คอมไฟแนนซ์</div><div class="bk-fin-val" id="sl_com_finance"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">ขายอุปกรณ์</div><div class="bk-fin-val" id="sl_com_acc_sale"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">อื่นๆ</div><div class="bk-fin-val" id="sl_com_other"></div></div>
+            <div class="bk-fin-row"><div class="bk-fin-lbl">ใช้งบไป</div><div class="bk-fin-val" id="sl_com_used"></div></div>
+            <div class="bk-fin-row" style="font-weight:700;background:#e8eaf6"><div class="bk-fin-lbl">รวมสุทธิ</div><div class="bk-fin-val" id="sl_com_total"></div></div>
+            <div class="bk-fin-row" style="font-weight:700;background:#fff3cd"><div class="bk-fin-lbl">คงเหลือ (Sale)</div><div class="bk-fin-val" id="sl_com_remain"></div></div>
+          </div>
+        </div>
+
+        <!-- หมายเหตุ -->
+        <div class="bk-sec" style="margin:4px 0 2px">หมายเหตุ</div>
+        <div id="sl_note" style="font-size:10px;min-height:14px;border-bottom:1px solid #aaa;padding:1px 4px"></div>
+
+        <!-- ลายเซ็น -->
+        <div style="flex:1"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <div style="border:1px solid #aaa;padding:6px;border-radius:3px;text-align:center">
+            <div style="font-size:10px;font-weight:600;color:#1a237e">ลูกค้า</div>
+            <div style="border-bottom:1px solid #555;margin:20px 8px 3px"></div>
+            <div style="font-size:10px;color:#555">( <span id="sl_sig_cust">.......................................................</span> )</div>
+            <div style="font-size:10px;color:#555">วันที่ ....../....../......</div>
+          </div>
+          <div style="border:1px solid #aaa;padding:6px;border-radius:3px;text-align:center">
+            <div style="font-size:10px;font-weight:600;color:#1a237e">พนักงานขาย / ผู้จัดการฝ่ายขาย</div>
+            <div style="border-bottom:1px solid #555;margin:20px 8px 3px"></div>
+            <div style="font-size:10px;color:#555">( <span id="sl_sig_sale">.......................................................</span> )</div>
+            <div style="font-size:10px;color:#555">วันที่ ....../....../......</div>
+          </div>
+        </div>
+
+        <!-- footer -->
+        <div style="background:#1a237e;color:#fff;text-align:center;padding:2px;font-size:9px;margin-top:6px;border-radius:2px">
+          บริษัท ท็อปทรี ออโต้ จำกัด | เอ็มจี สมุทรสาคร | โทร. 034-418-222
+        </div>
       </div>
     </div>
 
@@ -1880,11 +2076,13 @@ function printBooking(){
   // ---- สลับ view แล้วพิมพ์ ----
   document.getElementById('booking-form-view').style.display = 'none';
   document.getElementById('booking-print-view').style.display = 'block';
+  document.body.classList.add('print-booking');
   setTimeout(()=>{
     window.print();
     setTimeout(()=>{
       document.getElementById('booking-print-view').style.display = 'none';
       document.getElementById('booking-form-view').style.display = 'block';
+      document.body.classList.remove('print-booking');
     }, 500);
   }, 250);
 }
@@ -1898,6 +2096,388 @@ function selText(id){const el=document.getElementById(id);return el?.options[el.
 // ============================================================
 // EXCEL EXPORT
 // ============================================================
+// ============================================================
+// SALE PRINT VIEW
+// ============================================================
+function printSaleForm(){
+  const fmt=v=>v?v.toLocaleString('th-TH')+' บาท':'—';
+  const fmtOpt=v=>v?v.toLocaleString('th-TH')+' บาท':'';
+
+  // ข้อมูลทั่วไป
+  const setTxt=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v||'—';};
+  const setTxtOpt=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v||'';};
+
+  setTxt('sl_booking_no', gv('booking_no'));
+  setTxt('sl_delivery_date', gv('delivery_date')?new Date(gv('delivery_date')).toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'}):'—');
+  setTxt('sl_cust_name', gv('customer_name'));
+  setTxt('sl_id_card', gv('id_card'));
+  setTxt('sl_phone', gv('phone'));
+  setTxt('sl_sale_person', document.getElementById('sale_person')?.options[document.getElementById('sale_person')?.selectedIndex]?.text||'—');
+  setTxt('sl_payment_type', gv('payment_type'));
+  setTxtOpt('sl_finance_co', gv('finance_company'));
+  setTxt('sl_addr', gv('addr_id'));
+
+  // รถ
+  setTxt('sl_model', document.getElementById('car_model_sel')?.options[document.getElementById('car_model_sel')?.selectedIndex]?.text||'—');
+  setTxt('sl_color', gv('car_color'));
+  setTxtOpt('sl_vin', gv('vin'));
+  setTxtOpt('sl_reg_prov', gv('reg_province'));
+
+  // ราคา
+  setTxt('sl_price_car', fmt(n('price_car')));
+  const discCar=n('disc_car'); setTxtOpt('sl_disc_car', discCar?'('+discCar.toLocaleString('th-TH')+' บาท)':'');
+  const addAcc=n('add_acc'); setTxtOpt('sl_add_acc', fmtOpt(addAcc));
+  setTxt('sl_net_car', fmt(n('net_car')));
+  setTxt('sl_down', fmt(n('down')));
+  const discDown=n('disc_down'); setTxtOpt('sl_disc_down', discDown?'('+discDown.toLocaleString('th-TH')+' บาท)':'');
+  const regFee=n('reg_fee'); setTxtOpt('sl_reg_fee', fmtOpt(regFee));
+  const plateDep=n('plate_dep'); setTxtOpt('sl_plate_dep', fmtOpt(plateDep));
+  const reserve=n('reserve'); setTxtOpt('sl_reserve', reserve?'('+reserve.toLocaleString('th-TH')+' บาท)':'');
+  const adv=n('advance_inst'); setTxtOpt('sl_advance', fmtOpt(adv));
+  const otherFee=n('other_fee'); setTxtOpt('sl_other_fee', fmtOpt(otherFee));
+  setTxt('sl_net_total', fmt(n('net_total')));
+  setTxtOpt('sl_monthly', n('monthly')?n('monthly').toLocaleString('th-TH'):'');
+  setTxtOpt('sl_monthly_pct', gv('monthly_pct'));
+
+  // อุปกรณ์
+  let freeTotal=0, sellTotal=0;
+  let accRows='';
+  const rows=document.querySelectorAll('#acc-rows .acc-row, #acc-rows .acc-grid');
+  if(rows.length){
+    rows.forEach((row,i)=>{
+      const name=document.getElementById('acc_name_'+i)?.value||'';
+      const free=parseFloat(document.getElementById('acc_free_'+i)?.value)||0;
+      const sell=parseFloat(document.getElementById('acc_sell_'+i)?.value)||0;
+      if(!name && !free && !sell) return;
+      freeTotal+=free; sellTotal+=sell;
+      accRows+=`<tr>
+        <td style="padding:2px 4px;text-align:center;border:1px solid #ddd">${i+1}</td>
+        <td style="padding:2px 6px;border:1px solid #ddd">${name}</td>
+        <td style="padding:2px 6px;text-align:right;border:1px solid #ddd">${free?free.toLocaleString('th-TH'):''}</td>
+        <td style="padding:2px 6px;text-align:right;border:1px solid #ddd">${sell?sell.toLocaleString('th-TH'):''}</td>
+      </tr>`;
+    });
+  }
+  const accBody=document.getElementById('sl_acc_body');
+  if(accBody) accBody.innerHTML=accRows||'<tr><td colspan="4" style="padding:4px;text-align:center;color:#999">— ไม่มีรายการ —</td></tr>';
+  setTxtOpt('sl_acc_free_total', freeTotal?freeTotal.toLocaleString('th-TH'):'—');
+  setTxtOpt('sl_acc_sell_total', sellTotal?sellTotal.toLocaleString('th-TH'):'—');
+
+  // Commission
+  setTxt('sl_com_budget', fmt(n('com_budget')));
+  setTxtOpt('sl_com_acc', fmtOpt(n('com_acc')));
+  setTxtOpt('sl_com_cashback', fmtOpt(n('com_cashback')));
+  setTxtOpt('sl_com_finance', fmtOpt(n('com_finance')));
+  setTxtOpt('sl_com_acc_sale', fmtOpt(n('com_acc_sale')));
+  setTxtOpt('sl_com_other', fmtOpt(n('com_other')));
+  setTxtOpt('sl_com_used', fmtOpt(n('com_used')));
+  setTxt('sl_com_total', fmt(n('com_total')));
+  setTxt('sl_com_remain', document.getElementById('com_remain')?.value||'—');
+
+  // หมายเหตุ
+  const noteEl=document.getElementById('sl_note');
+  if(noteEl) noteEl.textContent=gv('note');
+
+  // ลายเซ็น
+  const custName=gv('customer_name'); setTxtOpt('sl_sig_cust', custName?'................................................................':'.......................................................');
+  const salePersonName=document.getElementById('sale_person')?.options[document.getElementById('sale_person')?.selectedIndex]?.text||'';
+  setTxtOpt('sl_sig_sale', salePersonName?'................................................................':'.......................................................');
+
+  // แสดง print view
+  document.getElementById('sale-print-view').style.display='block';
+  document.body.classList.add('print-sale');
+  // ซ่อน form elements ที่ไม่ใช่ print view
+  const pf=document.getElementById('page-form');
+  [...pf.children].forEach(el=>{if(el.id!=='sale-print-view') el.style.display='none';});
+  window.scrollTo(0,0);
+}
+
+function salePrint(){
+  document.body.classList.add('print-sale');
+  window.print();
+  setTimeout(()=>document.body.classList.remove('print-sale'),800);
+}
+
+function closeSalePrint(){
+  document.getElementById('sale-print-view').style.display='none';
+  document.body.classList.remove('print-sale');
+  const pf=document.getElementById('page-form');
+  [...pf.children].forEach(el=>{if(el.id!=='sale-print-view') el.style.display='';});
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+// OCR ใบอนุมัติธนาคาร
+// ============================================================
+let ocrData = {};
+
+function startOCR(event){
+  const file = event.target.files[0];
+  event.target.value = '';
+  if(!file) return;
+
+  // แสดง modal + preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('ocr-preview').src = e.target.result;
+    document.getElementById('ocr-modal').style.display = 'block';
+    document.getElementById('ocr-step1').style.display = 'block';
+    document.getElementById('ocr-step2').style.display = 'none';
+    document.getElementById('ocr-step3').style.display = 'none';
+    document.getElementById('ocr-progress-wrap').style.display = 'block';
+    document.getElementById('ocr-status').textContent = 'กำลังโหลด Tesseract OCR...';
+    document.getElementById('ocr-bar').style.width = '5%';
+    runTesseract(e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function runTesseract(dataUrl){
+  // โหลด Tesseract จาก unpkg
+  if(!window.Tesseract){
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js';
+    s.onload = () => doOCR(dataUrl);
+    s.onerror = () => showOCRError('ไม่สามารถโหลด Tesseract ได้ กรุณาเชื่อมต่ออินเทอร์เน็ต');
+    document.head.appendChild(s);
+  } else {
+    doOCR(dataUrl);
+  }
+}
+
+async function doOCR(dataUrl){
+  try {
+    document.getElementById('ocr-status').textContent = 'กำลังวิเคราะห์ภาพ...';
+    document.getElementById('ocr-bar').style.width = '20%';
+
+    const worker = await Tesseract.createWorker(['tha','eng'], 1, {
+      logger: m => {
+        if(m.status === 'recognizing text'){
+          const pct = Math.round(20 + m.progress * 70);
+          document.getElementById('ocr-bar').style.width = pct + '%';
+          document.getElementById('ocr-status').textContent = 'กำลังอ่านข้อมูล... ' + Math.round(m.progress*100) + '%';
+        }
+      }
+    });
+
+    const result = await worker.recognize(dataUrl);
+    await worker.terminate();
+
+    document.getElementById('ocr-bar').style.width = '100%';
+    document.getElementById('ocr-status').textContent = 'อ่านสำเร็จ!';
+
+    parseOCRText(result.data.text);
+  } catch(e) {
+    showOCRError('เกิดข้อผิดพลาด: ' + e.message);
+  }
+}
+
+function parseOCRText(text){
+  // normalize: ลบช่องว่างซ้ำ, รวมบรรทัด
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+  const full = lines.join(' ');
+
+  ocrData = {};
+
+  // helper: ดึงตัวเลขที่มี comma/dot
+  const getNum = (str) => {
+    const m = str.replace(/,/g,'').match(/[\d]+(?:\.\d+)?/);
+    return m ? parseFloat(m[0]) : null;
+  };
+
+  // ค้นหาจากทุก line
+  for(const line of lines){
+    const low = line.toLowerCase();
+
+    // ชื่อลูกค้า: บรรทัดหลัง "ตามที่" หรือมีชื่อ-สกุล
+    if(!ocrData.custName && (line.includes('ตามที่') || line.match(/^[ก-ฮ]{2,}\s+[ก-ฮ]{2,}/u))){
+      const nm = line.replace(/ตามที่/,'').trim();
+      if(nm.length > 3) ocrData.custName = nm;
+    }
+
+    // รุ่นรถ: S5-EV, MG5, ZS, EP, HS, VS
+    if(!ocrData.carModel && line.match(/\b(S5[-\s]?EV|MG5|ZS\s?EV|ZS|EP|HS|VS|MG\s?90|Cyberster)\b/i)){
+      const mm = line.match(/\b(S5[-\s]?EV|MG5|ZS\s?EV|ZS|EP|HS|VS|MG\s?90|Cyberster)\b/i);
+      if(mm) ocrData.carModel = mm[0].toUpperCase();
+    }
+
+    // สีรถ
+    if(!ocrData.carColor && line.includes('สี')){
+      const sm = line.match(/สี\s*([ก-ฮa-zA-Z]+)/u);
+      if(sm) ocrData.carColor = sm[1];
+    }
+
+    // ราคารถยนต์
+    if(!ocrData.priceCar && (line.includes('ราคารถยนต์') || line.includes('ราคารถ'))){
+      const nums = line.match(/[\d,]+\.?\d*/g);
+      if(nums) ocrData.priceCar = parseFloat(nums[0].replace(/,/g,''));
+    }
+
+    // เงินดาวน์
+    if(!ocrData.downPayment && line.match(/เงินดาวน์|ดาวน์/)){
+      const nums = line.match(/[\d,]+\.?\d*/g);
+      if(nums){
+        // เลือก value ที่ไม่ใช่ % (< 100)
+        for(const nm of nums){
+          const v = parseFloat(nm.replace(/,/g,''));
+          if(v > 1000){ ocrData.downPayment = v; break; }
+        }
+      }
+    }
+
+    // ยอดจัด / ยอดสินเชื่อ
+    if(!ocrData.loanAmt && (line.includes('ยอดจัด') || line.includes('ยอดสินเชื่อ'))){
+      const nums = line.match(/[\d,]+\.?\d*/g);
+      if(nums) ocrData.loanAmt = parseFloat(nums[0].replace(/,/g,''));
+    }
+
+    // ค่างวด
+    if(!ocrData.monthly && (line.includes('ค่างวด') || line.match(/งวดละ/))){
+      const nums = line.match(/[\d,]+\.?\d*/g);
+      if(nums){
+        for(const nm of nums){
+          const v = parseFloat(nm.replace(/,/g,''));
+          if(v > 1000){ ocrData.monthly = v; break; }
+        }
+      }
+    }
+
+    // จำนวนงวด
+    if(!ocrData.loanPeriod && line.match(/จำนวนงวด|จำนวนงวดผ่อน/)){
+      const nm = line.match(/(\d+)\s*งวด/);
+      if(nm) ocrData.loanPeriod = parseInt(nm[1]);
+    }
+
+    // อัตราดอกเบี้ย
+    if(!ocrData.interestRate && line.match(/อัตราดอกเบี้ย|ดอกเบี้ย/)){
+      const nm = line.match(/([\d.]+)\s*%/);
+      if(nm) ocrData.interestRate = parseFloat(nm[1]);
+    }
+
+    // ชื่อธนาคาร/ไฟแนนซ์
+    if(!ocrData.financeCo){
+      const banks = ['ธนาคารไทยธนชาต','ธนาคารกสิกรไทย','ธนาคารกรุงไทย','ธนาคารกรุงเทพ',
+                     'ธนาคารออมสิน','ธนาคารกรุงศรี','ธนาคาร UOB','ธนาคาร SCB',
+                     'ttb','KBank','Krungthai','TISCO','KKP','AEON','TTB'];
+      for(const b of banks){
+        if(line.toLowerCase().includes(b.toLowerCase())){
+          ocrData.financeCo = b; break;
+        }
+      }
+    }
+
+    // เลขที่ใบคำขอ / เลขที่ใบอนุมัติ
+    if(!ocrData.bankRef && line.match(/เลขที่ใบคำขอ|เลขที่|หมายเลข/)){
+      const nm = line.match(/(\d{8,})/);
+      if(nm) ocrData.bankRef = nm[1];
+    }
+  }
+
+  // คำนวณ monthly_pct string
+  if(ocrData.loanPeriod && ocrData.interestRate){
+    ocrData.monthlyPct = ocrData.loanPeriod + ' งวด / ' + ocrData.interestRate + '%';
+  } else if(ocrData.loanPeriod){
+    ocrData.monthlyPct = ocrData.loanPeriod + ' งวด';
+  } else if(ocrData.interestRate){
+    ocrData.monthlyPct = ocrData.interestRate + '% ต่อปี';
+  }
+
+  showOCRResult();
+}
+
+function showOCRResult(){
+  const fmt = v => v ? v.toLocaleString('th-TH') : '';
+  const fields = [
+    { key:'custName',     label:'ชื่อลูกค้า',        val: ocrData.custName||'' },
+    { key:'carModel',     label:'รุ่นรถ',             val: ocrData.carModel||'' },
+    { key:'carColor',     label:'สี',                 val: ocrData.carColor||'' },
+    { key:'financeCo',    label:'ไฟแนนซ์/ธนาคาร',   val: ocrData.financeCo||'' },
+    { key:'priceCar',     label:'ราคารถยนต์ (บาท)',   val: ocrData.priceCar ? fmt(ocrData.priceCar) : '' },
+    { key:'downPayment',  label:'เงินดาวน์ (บาท)',    val: ocrData.downPayment ? fmt(ocrData.downPayment) : '' },
+    { key:'loanAmt',      label:'ยอดจัด (บาท)',       val: ocrData.loanAmt ? fmt(ocrData.loanAmt) : '' },
+    { key:'monthly',      label:'ค่างวด (บาท/งวด)',   val: ocrData.monthly ? fmt(ocrData.monthly) : '' },
+    { key:'monthlyPct',   label:'งวด / ดอกเบี้ย',    val: ocrData.monthlyPct||'' },
+  ];
+
+  const grid = document.getElementById('ocr-result-grid');
+  grid.innerHTML = fields.map(f => `
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:140px;font-size:12px;color:#666;flex-shrink:0">${f.label}</div>
+      <input id="ocrf_${f.key}" value="${f.val}" style="flex:1;padding:5px 8px;border:1px solid ${f.val?'#3949ab':'#ffb300'};border-radius:4px;font-size:13px;background:${f.val?'#fff':'#fffde7'}">
+    </div>
+  `).join('');
+
+  document.getElementById('ocr-step1').style.display = 'none';
+  document.getElementById('ocr-step2').style.display = 'block';
+}
+
+function applyOCR(){
+  // อ่านค่าจาก input fields ใน modal (user อาจแก้ไขแล้ว)
+  const g = id => document.getElementById('ocrf_'+id)?.value.trim()||'';
+  const gn = id => parseFloat(g(id).replace(/,/g,''))||0;
+
+  // กรอกลงฟอร์ม
+  const setV = (id,v) => { const el=document.getElementById(id); if(el){ el.value=v; el.dispatchEvent(new Event('input')); el.dispatchEvent(new Event('change')); } };
+
+  if(g('custName'))   setV('customer_name', g('custName'));
+  if(g('carColor'))   setV('car_color', g('carColor'));
+  if(g('financeCo'))  setV('finance_company', g('financeCo'));
+  if(gn('priceCar'))  setV('price_car', gn('priceCar'));
+  if(gn('downPayment')) setV('down', gn('downPayment'));
+  if(gn('monthly'))   setV('monthly', gn('monthly'));
+  if(g('monthlyPct')) setV('monthly_pct', g('monthlyPct'));
+
+  // ถ้ามีรุ่นรถ ลอง match กับ dropdown
+  if(g('carModel')){
+    const sel = document.getElementById('car_model_sel');
+    if(sel){
+      const model = g('carModel').toLowerCase();
+      for(let i=0;i<sel.options.length;i++){
+        if(sel.options[i].text.toLowerCase().includes(model)){
+          sel.selectedIndex = i;
+          sel.dispatchEvent(new Event('change'));
+          break;
+        }
+      }
+    }
+  }
+
+  // ตั้ง payment type เป็น เช่าซื้อ ถ้ามีข้อมูลไฟแนนซ์
+  if(g('financeCo') || gn('loanAmt')){
+    const pt = document.getElementById('payment_type');
+    if(pt) for(let i=0;i<pt.options.length;i++){
+      if(pt.options[i].value.includes('เช่าซื้อ') || pt.options[i].text.includes('เช่าซื้อ')){
+        pt.selectedIndex=i; break;
+      }
+    }
+  }
+
+  // trigger คำนวณ
+  if(typeof calcAll === 'function') calcAll();
+  if(typeof triggerAutoSave === 'function') triggerAutoSave();
+
+  closeOCR();
+
+  // แสดงแจ้งเตือน
+  const note = document.createElement('div');
+  note.style.cssText='position:fixed;bottom:24px;right:24px;background:#1a237e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:9998;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
+  note.textContent = '✅ กรอกข้อมูลจากใบอนุมัติแล้ว — โปรดตรวจสอบอีกครั้ง';
+  document.body.appendChild(note);
+  setTimeout(()=>note.remove(), 4000);
+}
+
+function showOCRError(msg){
+  document.getElementById('ocr-step1').style.display = 'none';
+  document.getElementById('ocr-step2').style.display = 'none';
+  document.getElementById('ocr-step3').style.display = 'block';
+  document.getElementById('ocr-error-msg').textContent = msg;
+}
+
+function closeOCR(){
+  document.getElementById('ocr-modal').style.display = 'none';
+  ocrData = {};
+}
+
 function exportExcel(){
   const saleName=selText('sale_person').replace(/\s*\(.*\)/,'');
   const carModel=selText('car_model_sel').replace(/\s*\(.*\)/,'');
