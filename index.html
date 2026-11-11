@@ -234,6 +234,12 @@ select.bk-field-line{cursor:pointer}
 /* Note box */
 .bk-note-box{border:1px solid #1a237e;background:#f0f4ff;padding:6px 10px;border-radius:4px;margin:6px 0;font-size:11.5px}
 
+/* Legal highlight colors (สคบ. 2567) */
+.bk-legal-hl{background:#e8f5e9;border-left:3px solid #2e7d32;padding-left:6px;border-radius:0 3px 3px 0}
+.bk-legal-warn{background:#fff3e0;border-left:3px solid #e65100;padding-left:6px;border-radius:0 3px 3px 0}
+.bk-legal-warn .bk-legal-n{color:#bf360c}
+.bk-legal-hl .bk-legal-n{color:#1b5e20}
+
 /* ===== BOOKING FORM inputs (on-screen) ===== */
 .bkf input,.bkf select{font-size:13px;color:#1a1a1a;background:#fafafa;border:1px solid #e0e0e0;border-radius:7px;padding:7px 10px;width:100%;font-family:'Sarabun',sans-serif;transition:border .15s}
 .bkf input:focus,.bkf select:focus{outline:none;border-color:#1a1a1a;background:#fff}
@@ -665,6 +671,10 @@ select.bk-field-line{cursor:pointer}
               <div class="f"><label>เลขตัวถัง (ถ้ามี)</label><input type="text" id="bk_car_vin" placeholder="VIN"></div>
             </div>
             <div class="g3" style="margin-top:8px">
+              <div class="f"><label>ขนาดเครื่องยนต์/มอเตอร์ (cc หรือ kW)</label><input type="text" id="bk_car_engine" placeholder="เช่น 1500 cc หรือ 150 kW"></div>
+              <div></div><div></div>
+            </div>
+            <div class="g3" style="margin-top:8px">
               <div class="f nr"><label>ราคารถ (บาท)</label><input type="number" id="bk_car_price" oninput="bkCalcPrice()" placeholder="0"></div>
               <div class="f nr"><label>ส่วนลด (บาท)</label><input type="number" id="bk_car_disc" oninput="bkCalcPrice()" placeholder="0"></div>
               <div class="f nr"><label>ราคาสุทธิ</label><input type="number" id="bk_car_net" readonly></div>
@@ -781,11 +791,13 @@ select.bk-field-line{cursor:pointer}
           <div class="bk-sec" style="margin-top:5px">ข้อ 1. รายละเอียดรถยนต์ที่จอง</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px">
             <div>
-              <div class="bk-fr"><span class="bk-lbl">รุ่น:</span><span id="p2_car_model" style="font-weight:700;flex:1;border-bottom:1px solid #555;padding:1px 4px"></span></div>
+              <div class="bk-fr"><span class="bk-lbl">ยี่ห้อ:</span><span id="p2_car_brand" style="border-bottom:1px solid #555;padding:1px 4px;min-width:60px"></span>
+                <span class="bk-lbl">รุ่น:</span><span id="p2_car_model" style="font-weight:700;flex:1;border-bottom:1px solid #555;padding:1px 4px"></span></div>
               <div class="bk-fr">
                 <span class="bk-lbl">สี:</span><span id="p2_car_color" style="border-bottom:1px solid #555;padding:1px 4px;min-width:80px"></span>
-                <span class="bk-lbl">ปี:</span><span id="p2_car_year" style="border-bottom:1px solid #555;padding:1px 4px;min-width:50px"></span>
+                <span class="bk-lbl">ปีผลิต:</span><span id="p2_car_year" style="border-bottom:1px solid #555;padding:1px 4px;min-width:50px"></span>
               </div>
+              <div class="bk-fr"><span class="bk-lbl">ขนาดเครื่องยนต์/มอเตอร์:</span><span id="p2_car_engine" style="border-bottom:1px solid #555;padding:1px 4px;min-width:80px"></span><span class="bk-lbl">cc/kW</span></div>
               <div class="bk-fr"><span class="bk-lbl">เลขตัวถัง:</span><span id="p2_car_vin" style="border-bottom:1px solid #555;padding:1px 4px;flex:1"></span></div>
             </div>
             <div>
@@ -891,34 +903,55 @@ select.bk-field-line{cursor:pointer}
             </div>
           </div>
 
-          <div class="bk-sec">สิทธิของคู่สัญญาและข้อกำหนด</div>
+          <div class="bk-sec">ข้อกำหนดและเงื่อนไข (ตามประกาศ สคบ. พ.ศ. ๒๕๖๗)</div>
+
           <div class="bk-legal">
-            <span class="bk-legal-n">ข้อ 1. การจอง —</span> ผู้จองตกลงชำระเงินมัดจำตามจำนวนที่ระบุในสัญญาฉบับนี้เพื่อจองซื้อรถยนต์ตามรายละเอียดข้างต้น และผู้จำหน่ายตกลงหารถยนต์ดังกล่าวส่งมอบให้แก่ผู้จองตามกำหนดการที่ระบุ
-          </div>
-          <div class="bk-legal">
-            <span class="bk-legal-n">ข้อ 2. เงินมัดจำ —</span> เงินมัดจำที่ผู้จองชำระนี้เป็นส่วนหนึ่งของราคาซื้อขาย หากผู้จองผิดนัดหรือบอกเลิกสัญญาโดยไม่มีเหตุอันสมควร ผู้จำหน่ายมีสิทธิ์ริบเงินมัดจำได้ทั้งหมด เว้นแต่จะตกลงกันเป็นอย่างอื่น
-          </div>
-          <div class="bk-legal">
-            <span class="bk-legal-n">ข้อ 3. กรณีผู้จำหน่ายไม่สามารถส่งมอบ —</span> หากผู้จำหน่ายไม่สามารถจัดหารถยนต์ตามที่ตกลงได้ภายในกำหนดเวลา ผู้จำหน่ายจะคืนเงินมัดจำเต็มจำนวนภายใน 15 วันทำการ โดยผู้จองไม่มีสิทธิ์เรียกร้องค่าเสียหายเพิ่มเติม
-          </div>
-          <div class="bk-legal">
-            <span class="bk-legal-n">ข้อ 4. การส่งมอบ —</span> ผู้จองต้องชำระราคารถยนต์ส่วนที่เหลือให้ครบก่อนหรือในวันส่งมอบ หากไม่ชำระภายในกำหนด ผู้จำหน่ายมีสิทธิ์บอกเลิกสัญญาและริบเงินมัดจำ ผู้จำหน่ายจะส่งมอบรถยนต์ในสภาพสมบูรณ์พร้อมเอกสารครบถ้วนตามที่กฎหมายกำหนด
-          </div>
-          <div class="bk-legal">
-            <span class="bk-legal-n">ข้อ 5. ความเสียหายก่อนส่งมอบ —</span> หากรถยนต์ได้รับความเสียหายก่อนส่งมอบโดยไม่ใช่ความผิดของผู้จอง ผู้จำหน่ายจะซ่อมแซมให้อยู่ในสภาพเดิมหรือจัดหารถยนต์คันใหม่ทดแทน หรือคืนเงินมัดจำให้ผู้จอง ตามที่ทั้งสองฝ่ายตกลงกัน
-          </div>
-          <div class="bk-legal">
-            <span class="bk-legal-n">ข้อ 6. การเปลี่ยนแปลงราคา —</span> ราคารถยนต์ที่ระบุในสัญญาฉบับนี้เป็นราคา ณ วันที่ทำสัญญา หากบริษัทผู้ผลิตปรับเปลี่ยนราคาก่อนวันส่งมอบ ผู้จำหน่ายจะแจ้งให้ผู้จองทราบล่วงหน้าและทั้งสองฝ่ายตกลงฝ่ายเจรจากัน
-          </div>
-          <div class="bk-legal">
-            <span class="bk-legal-n">ข้อ 7. สินเชื่อ —</span> ผู้จองไม่มีสิทธิ์โอนสัญญาฉบับนี้ให้แก่บุคคลอื่นโดยไม่ได้รับความยินยอมเป็นลายลักษณ์อักษรจากผู้จำหน่าย หากผู้จองขอสินเชื่อและไม่ได้รับอนุมัติภายในกำหนดวันส่งมอบ คู่สัญญาทั้งสองฝ่ายมีสิทธิ์บอกเลิกสัญญาได้
-          </div>
-          <div class="bk-legal">
-            <span class="bk-legal-n">ข้อ 8. กฎหมายที่ใช้บังคับ —</span> สัญญาฉบับนี้อยู่ภายใต้บังคับแห่งกฎหมายไทย ข้อพิพาทใดๆ ที่เกิดขึ้นจากสัญญาฉบับนี้ให้อยู่ในอำนาจของศาลที่มีเขตอำนาจในจังหวัดนครปฐม
+            <span class="bk-legal-n">ข้อ 1. การจอง —</span> ผู้จองตกลงชำระเงินจองตามจำนวนที่ระบุในสัญญาฉบับนี้ เพื่อจองซื้อรถยนต์ตามรายละเอียดในหน้า 1 และผู้จำหน่ายตกลงจัดหารถยนต์ดังกล่าวส่งมอบให้ผู้จองตามกำหนดส่งมอบที่ระบุ เงินจองนี้ถือเป็นส่วนหนึ่งของราคาซื้อขาย
           </div>
 
-          <div class="bk-note-box" style="font-size:10.5px;margin:6px 0 4px">
-            สัญญาฉบับนี้ทำขึ้น 2 ฉบับ มีข้อความตรงกัน คู่สัญญาแต่ละฝ่ายถือไว้ฝ่ายละ 1 ฉบับ และได้อ่านเข้าใจข้อความโดยตลอดแล้ว จึงลงลายมือชื่อไว้เป็นหลักฐาน
+          <div class="bk-legal bk-legal-warn">
+            <span class="bk-legal-n">ข้อ 2. การริบเงินจอง —</span> ผู้จำหน่ายมีสิทธิ์ริบเงินจองได้ <u>เฉพาะกรณีที่ผู้จองเป็นฝ่ายผิดสัญญาเท่านั้น</u> กล่าวคือ ผู้จองไม่ชำระราคาส่วนที่เหลือหรือปฏิเสธการรับมอบรถยนต์โดยไม่มีเหตุอันสมควร หากผู้จำหน่ายเป็นฝ่ายผิดสัญญา ผู้จำหน่ายไม่มีสิทธิ์ริบเงินจอง
+          </div>
+
+          <div class="bk-legal bk-legal-hl">
+            <span class="bk-legal-n">ข้อ 3. สิทธิ์บอกเลิกสัญญาของผู้จอง —</span> ผู้จองมีสิทธิ์บอกเลิกสัญญาและได้รับเงินจองคืนเต็มจำนวน ในกรณีดังต่อไปนี้<br>
+            &nbsp;&nbsp;&nbsp;(1) ผู้จำหน่ายแจ้งขอเปลี่ยนแปลงราคาสูงกว่าที่ตกลงในสัญญา<br>
+            &nbsp;&nbsp;&nbsp;(2) ผู้จำหน่ายไม่ส่งมอบรถยนต์ภายในกำหนดส่งมอบที่ระบุในสัญญา<br>
+            &nbsp;&nbsp;&nbsp;(3) รถยนต์ที่ส่งมอบไม่ตรงตามที่ระบุในสัญญา ไม่ว่าจะเป็นยี่ห้อ รุ่น ปีที่ผลิต สี หรือขนาดเครื่องยนต์/มอเตอร์<br>
+            &nbsp;&nbsp;&nbsp;(4) ผู้จำหน่ายไม่จัดให้มีของแถม อุปกรณ์ หรือสิทธิประโยชน์ตามที่ระบุในสัญญา
+          </div>
+
+          <div class="bk-legal">
+            <span class="bk-legal-n">ข้อ 4. กรณีสินเชื่อไม่ได้รับอนุมัติ —</span> หากผู้จองยื่นขอสินเชื่อเพื่อซื้อรถยนต์และไม่ได้รับอนุมัติจากสถาบันการเงิน คู่สัญญาทั้งสองฝ่ายมีสิทธิ์บอกเลิกสัญญาได้โดยผู้จำหน่ายต้องคืนเงินจองให้ผู้จองในกรณีดังกล่าว
+          </div>
+
+          <div class="bk-legal bk-legal-hl">
+            <span class="bk-legal-n">ข้อ 5. การคืนเงินจอง —</span> ในกรณีที่ผู้จองมีสิทธิ์ได้รับเงินจองคืน ผู้จำหน่ายต้องคืนเงินจองเต็มจำนวน<u>ภายใน 15 วันนับแต่วันบอกเลิกสัญญา</u> <strong>โดยจะหักค่าใช้จ่ายหรือค่าธรรมเนียมใดๆ ไม่ได้ทั้งสิ้น</strong>
+          </div>
+
+          <div class="bk-legal bk-legal-warn">
+            <span class="bk-legal-n">ข้อ 6. ห้ามเปลี่ยนแปลงราคาและเงื่อนไข —</span> <strong>ผู้จำหน่ายจะเปลี่ยนแปลงราคาหรือเงื่อนไขในสัญญาฝ่ายเดียวไม่ได้</strong> ราคารถยนต์และรายการอุปกรณ์ที่ระบุในสัญญาฉบับนี้มีผลผูกพันทั้งสองฝ่ายตลอดอายุสัญญา เว้นแต่ทั้งสองฝ่ายจะตกลงแก้ไขเป็นลายลักษณ์อักษร
+          </div>
+
+          <div class="bk-legal">
+            <span class="bk-legal-n">ข้อ 7. ความเสียหายก่อนส่งมอบ —</span> หากรถยนต์ได้รับความเสียหายก่อนส่งมอบโดยไม่ใช่ความผิดของผู้จอง ผู้จองมีสิทธิ์เลือก (ก) รับรถที่ซ่อมแซมแล้วในสภาพสมบูรณ์ตามสัญญา หรือ (ข) บอกเลิกสัญญาและรับเงินจองคืนเต็มจำนวนภายใน 15 วัน
+          </div>
+
+          <div class="bk-legal">
+            <span class="bk-legal-n">ข้อ 8. ข้อห้ามในสัญญา —</span> สัญญาจองนี้จะมีข้อความใดที่เป็นการ (ก) ยกเว้นหรือจำกัดความรับผิดของผู้จำหน่าย (ข) ให้สิทธิ์ผู้จำหน่ายเปลี่ยนแปลงเงื่อนไขฝ่ายเดียว (ค) ให้สิทธิ์ผู้จำหน่ายบอกเลิกสัญญาโดยผู้จองไม่ผิด หรือ (ง) ให้สิทธิ์ผู้จำหน่ายริบเงินจองโดยผู้จองไม่ผิด <strong>ไม่ได้</strong> ข้อความดังกล่าวใช้บังคับไม่ได้
+          </div>
+
+          <div class="bk-legal">
+            <span class="bk-legal-n">ข้อ 9. ข้อมูลส่วนบุคคล —</span> ผู้จำหน่ายจะเก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของผู้จองเพื่อวัตถุประสงค์ในการดำเนินการตามสัญญานี้เท่านั้น ตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA) โดยไม่เปิดเผยต่อบุคคลภายนอกโดยไม่ได้รับความยินยอม
+          </div>
+
+          <div class="bk-legal">
+            <span class="bk-legal-n">ข้อ 10. กฎหมายที่ใช้บังคับ —</span> สัญญาฉบับนี้อยู่ภายใต้บังคับแห่งกฎหมายไทย ข้อพิพาทใดๆ ให้อยู่ในอำนาจของศาลที่มีเขตอำนาจในจังหวัดนครปฐม สัญญาฉบับนี้จัดทำขึ้นตามประกาศคณะกรรมการว่าด้วยสัญญา เรื่อง ให้ธุรกิจการขายรถยนต์และรถจักรยานยนต์ (รถใหม่) ที่มีการจองเป็นธุรกิจที่ควบคุมสัญญา พ.ศ. ๒๕๖๗
+          </div>
+
+          <div class="bk-note-box" style="font-size:10.5px;margin:5px 0 3px">
+            <strong>หมายเหตุสำคัญ:</strong> สัญญาฉบับนี้ทำขึ้น <strong>2 ฉบับ</strong> มีข้อความตรงกัน ผู้จำหน่ายต้องมอบสัญญา 1 ฉบับให้แก่ผู้จองทันทีที่มีการลงนาม — คู่สัญญาทั้งสองฝ่ายได้อ่านและเข้าใจข้อความโดยตลอดแล้ว จึงลงลายมือชื่อไว้เป็นหลักฐาน<br>
+            <span style="color:#1a237e">ร้องเรียน/สอบถาม สคบ.: โทร. <strong>1166</strong> | อ้างอิง: ราชกิจจานุเบกษา เล่ม 141 ตอนพิเศษ 288 ง วันที่ 22 ต.ค. 2567</span>
           </div>
 
           <div class="bk-sig-grid3">
@@ -991,10 +1024,14 @@ select.bk-field-line{cursor:pointer}
 
       <div class="section">
         <div class="sec-title">รุ่นรถยนต์และราคา</div>
-        <div class="g3" style="margin-bottom:12px">
-          <div class="f"><label>ชื่อรุ่น</label><input type="text" id="new_model_name" placeholder="ชื่อรุ่น"></div>
+        <div class="g3" style="margin-bottom:8px">
+          <div class="f"><label>ชื่อรุ่น</label><input type="text" id="new_model_name" placeholder="ชื่อรุ่น เช่น MG5 EV Trophy"></div>
           <div class="f nr"><label>ราคาตั้ง (บาท)</label><input type="number" id="new_model_price" placeholder="749900"></div>
           <div class="f nr"><label>ส่วนลดมาตรฐาน (บาท)</label><input type="number" id="new_model_disc" placeholder="0"></div>
+        </div>
+        <div class="g3" style="margin-bottom:12px">
+          <div class="f"><label>ขนาดเครื่องยนต์/มอเตอร์ (cc หรือ kW)</label><input type="text" id="new_model_engine" placeholder="เช่น 1500 cc หรือ 150 kW"></div>
+          <div></div><div></div>
         </div>
         <button class="btn btn-p btn-sm" onclick="addModel()">+ เพิ่มรุ่น</button>
         <div id="model-list" style="margin-top:14px"></div>
@@ -1654,12 +1691,22 @@ function renderModelList(){
   const c=document.getElementById('model-list');
   if(!db.models.length){c.innerHTML='<div class="empty">ยังไม่มีรุ่นรถ</div>';return;}
   c.innerHTML=db.models.map((m,i)=>`
-    <div class="list-item list-4">
-      <span style="font-weight:600;font-size:14px">${m.name}</span>
-      <span style="font-size:13px;text-align:right">${m.price.toLocaleString('th-TH')} ฿</span>
-      <span style="font-size:13px;color:#999;text-align:right">ลด ${(m.disc||0).toLocaleString('th-TH')}</span>
+    <div class="list-item" style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:8px 12px">
+      <div>
+        <div style="font-weight:600;font-size:14px">${m.name}</div>
+        <div style="font-size:11px;color:#777;margin-top:1px">
+          ${m.price.toLocaleString('th-TH')} ฿ &nbsp;|&nbsp; ลด ${(m.disc||0).toLocaleString('th-TH')} ฿
+          &nbsp;|&nbsp; <span style="color:${m.engine?'#1a7a4a':'#c62828'}">${m.engine?'🔧 '+m.engine:'⚠️ ยังไม่มีขนาดเครื่องยนต์'}</span>
+        </div>
+      </div>
+      <input type="text" placeholder="cc/kW" value="${m.engine||''}" id="eng_${i}" style="font-size:12px;border:1px solid #ccc;border-radius:5px;padding:4px 7px;width:130px">
+      <button class="btn btn-sm" onclick="saveEngine(${i})" style="background:#1a237e;color:#fff">💾 บันทึก</button>
       <button class="btn btn-sm btn-danger" onclick="delModel(${i})">ลบ</button>
     </div>`).join('');
+}
+function saveEngine(i){
+  const v=document.getElementById('eng_'+i)?.value.trim();
+  if(v!==undefined){db.models[i].engine=v;save();renderModelList();}
 }
 
 function renderSaleList(){
@@ -1685,10 +1732,11 @@ function addModel(){
   const name=document.getElementById('new_model_name').value.trim();
   const price=parseFloat(document.getElementById('new_model_price').value)||0;
   const disc=parseFloat(document.getElementById('new_model_disc').value)||0;
+  const engine=document.getElementById('new_model_engine').value.trim();
   if(!name){alert('กรุณาใส่ชื่อรุ่น');return;}
-  db.models.push({name,price,disc,budget:disc});
+  db.models.push({name,price,disc,budget:disc,engine});
   save();
-  ['new_model_name','new_model_price','new_model_disc'].forEach(id=>document.getElementById(id).value='');
+  ['new_model_name','new_model_price','new_model_disc','new_model_engine'].forEach(id=>document.getElementById(id).value='');
   renderModelList();refreshSelects();
 }
 function delModel(i){if(confirm('ลบรุ่น "'+db.models[i].name+'" ?')){db.models.splice(i,1);save();renderModelList();refreshSelects();}}
@@ -1753,6 +1801,9 @@ function onBkCarModelChange(){
   const m = db.models[idx];
   document.getElementById('bk_car_price').value = m.price || '';
   document.getElementById('bk_car_disc').value = m.disc || '';
+  if(m.engine && document.getElementById('bk_car_engine')){
+    document.getElementById('bk_car_engine').value = m.engine;
+  }
   bkCalcPrice();
 }
 
@@ -1960,6 +2011,8 @@ function printBooking(){
   const spName  = spIdx!=='' ? (db.salePeople[spIdx]?.name||'') : '';
   const cmIdx   = document.getElementById('bk_car_model').value;
   const cmName  = cmIdx!=='' ? (db.models[cmIdx]?.name||'') : '';
+  const cmBrand = cmIdx!=='' ? (db.models[cmIdx]?.brand||'MG') : 'MG';
+  const cmEngine = cmIdx!=='' ? (db.models[cmIdx]?.engine||gv('bk_car_engine')||'') : (gv('bk_car_engine')||'');
 
   // pay methods
   const payMethods = ['เงินสด','โอนเงิน','บัตรเครดิต/เดบิต','เช็ค']
@@ -2006,7 +2059,9 @@ function printBooking(){
   s('p1_booking_date', bkFmtDate(gv('bk_booking_date')));
 
   // ---- Page 1 — รถยนต์ + มัดจำ + ส่งมอบ ----
+  s('p2_car_brand', cmBrand);
   s('p2_car_model', cmName);
+  s('p2_car_engine', cmEngine);
   s('p2_car_year', gv('bk_car_year'));
   s('p2_car_color', gv('bk_car_color'));
   s('p2_car_vin', gv('bk_car_vin'));
