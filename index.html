@@ -149,7 +149,7 @@ input[readonly]{background:#f3f3f1;color:#888;cursor:default}
   body.print-sale .sale-form-content{display:none!important}
 
   /* A4 layout สำหรับทุก bk-page */
-  .bk-page{width:210mm;height:297mm;background:#fff;margin:0;padding:10mm 14mm;page-break-after:always;box-shadow:none;overflow:hidden;display:flex;flex-direction:column}
+  .bk-page{width:210mm;min-height:auto;background:#fff;margin:0;padding:10mm 14mm;page-break-after:always;box-shadow:none;overflow:visible;display:flex;flex-direction:column}
   .bk-page:last-child{page-break-after:auto}
   .bk-field-line:focus{background:transparent!important}
   td input:focus{background:transparent!important}
@@ -163,12 +163,13 @@ input[readonly]{background:#f3f3f1;color:#888;cursor:default}
 /* Screen wrapper for booking pages */
 #booking-print-view{background:#e8e8e8;padding:8px 0}
 .bk-page{
-  width:210mm;min-height:297mm;background:#fff;
-  margin:8mm auto;padding:12mm 14mm;
+  width:210mm;background:#fff;
+  margin:8mm auto;padding:10mm 14mm;
   page-break-after:always;position:relative;
   box-shadow:0 2px 8px rgba(0,0,0,.15);
   font-family:'Sarabun',sans-serif;font-size:13px;color:#111;
   display:flex;flex-direction:column;
+  box-sizing:border-box;
 }
 .bk-page:last-child{page-break-after:auto}
 
@@ -757,17 +758,10 @@ select.bk-field-line{cursor:pointer}
 
         <!-- ========== หน้า 1/2 : ข้อมูลการจอง ========== -->
         <div class="bk-page">
-          <!-- HEADER -->
-          <div class="bk-header">
-            <div class="bk-logo-box">MG<br>TOP3</div>
-            <div class="bk-htext">
-              <h1>บริษัท ท็อปทรี ออโต้ จำกัด</h1>
-              <p>ตัวแทนจำหน่ายรถยนต์ MG | 55/5 ม.6 ต.ท่าตลาด อ.สามพราน จ.นครปฐม 73110 | โทร. 034-966-966 | Line: @mgtop3</p>
-            </div>
-            <div class="bk-hright">
-              <div class="bk-doc-title">สัญญาจองรถยนต์</div>
-              <div class="bk-doc-no">เลขที่: <span id="p1_doc_no"></span></div>
-            </div>
+          <!-- ชื่อเอกสาร (ไม่มี header/logo) -->
+          <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1a237e;padding-bottom:4px;margin-bottom:6px">
+            <div style="font-size:17px;font-weight:700;color:#1a237e">สัญญาจองรถยนต์</div>
+            <div style="font-size:11px;color:#555">เลขที่: <span id="p1_doc_no" style="font-weight:600;color:#111"></span> &nbsp;|&nbsp; บริษัท ท็อปทรี ออโต้ จำกัด &nbsp;|&nbsp; โทร. 034-966-966</div>
           </div>
 
           <!-- รายละเอียดคู่สัญญา -->
@@ -885,22 +879,15 @@ select.bk-field-line{cursor:pointer}
             <span class="bk-lbl">หมายเหตุ:</span>
             <span id="p3_extra_note" style="border-bottom:1px solid #555;padding:1px 4px;flex:1;font-size:11px"></span>
           </div>
-          <div style="flex:1"></div>
           <div class="bk-pgnum">หน้า 1 / 2</div>
         </div>
 
         <!-- ========== หน้า 2/2 : ข้อกำหนด + ลายเซ็น ========== -->
         <div class="bk-page">
-          <div class="bk-header">
-            <div class="bk-logo-box">MG<br>TOP3</div>
-            <div class="bk-htext">
-              <h1>บริษัท ท็อปทรี ออโต้ จำกัด</h1>
-              <p>ตัวแทนจำหน่ายรถยนต์ MG | สามพราน นครปฐม | โทร. 034-966-966</p>
-            </div>
-            <div class="bk-hright">
-              <div class="bk-doc-title">สัญญาจองรถยนต์</div>
-              <div class="bk-doc-no">เลขที่: <span id="p4_doc_no"></span> | ลูกค้า: <span id="p4_cust_name"></span></div>
-            </div>
+          <!-- ชื่อเอกสาร (ไม่มี header/logo) -->
+          <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1a237e;padding-bottom:4px;margin-bottom:6px">
+            <div style="font-size:17px;font-weight:700;color:#1a237e">สัญญาจองรถยนต์ (ต่อ)</div>
+            <div style="font-size:11px;color:#555">เลขที่: <span id="p4_doc_no" style="font-weight:600;color:#111"></span> &nbsp;|&nbsp; ลูกค้า: <span id="p4_cust_name" style="font-weight:600;color:#111"></span></div>
           </div>
 
           <div class="bk-sec">ข้อกำหนดและเงื่อนไข (ตามประกาศ สคบ. พ.ศ. ๒๕๖๗)</div>
@@ -990,7 +977,6 @@ select.bk-field-line{cursor:pointer}
             </div>
           </div>
 
-          <div style="flex:1"></div>
           <div style="margin-top:8px;padding:5px 10px;background:#f5f5f5;border:1px dashed #aaa;border-radius:4px;font-size:10.5px;color:#555;text-align:center">
             สอบถามข้อมูลเพิ่มเติม: บริษัท ท็อปทรี ออโต้ จำกัด &nbsp;|&nbsp; 55/5 ม.6 ต.ท่าตลาด อ.สามพราน จ.นครปฐม 73110 &nbsp;|&nbsp; โทร. 034-966-966 &nbsp;|&nbsp; Line: @mgtop3
           </div>
